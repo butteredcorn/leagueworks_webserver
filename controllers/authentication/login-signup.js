@@ -11,6 +11,7 @@ const {MINIMUM_AGE_REQUIREMENT} = require('../../globals').platform_restrictions
  */
 const signUpUser = ({first_name, last_name, birth_date, phone_number, email, password}) => {
     
+    //calculate age from birthday here
     const age = 18;
 
     return new Promise((resolve, reject) => {
@@ -27,7 +28,7 @@ const signUpUser = ({first_name, last_name, birth_date, phone_number, email, pas
                 .then(async (hashedPassword) => {
                     try {
                         const newUser = {first_name: first_name, last_name: last_name, birth_date: birth_date, phone_number: phone_number, email: email, password_hash: hashedPassword, leagues: [], messages: []}
-                        await db.createUser({first_name: first_name, last_name: last_name, birth_date: birth_date, phone_number: phone_number, email: email, password_hash: hashedPassword, leagues: [], messages: []}) //implement
+                        await db.createUser(newUser) //implement
                         delete newUser.password_hash
 
                         resolve(newUser)
@@ -52,23 +53,24 @@ const loginUser = (email, password) => {
         try {
             //find the user by email
             //await db.createConnection()
-            const user = await db.getUsers('id, email, password_hash, first_name, last_name, city_of_residence', `WHERE email = '${email}'`)
+            const user = await db.getUserByEmail({email})
             console.log(user)
-            if (user && Array.isArray(user) && user.length > 0) {
+            if (user) {
                 //user confirmed, then try password
-                compare(password, user[0].password_hash)
-                    .then((result) => {
-                        if(result && user[0] && user[0].id <= admins.length && admins.includes(user[0].first_name)) {
-                            user[0].admin = true
-                        }
-                        delete user[0].password_hash
-                        //resolve the user object
-                        resolve(user[0])
-                    })
-                    .catch((error) => {
-                        console.log(error)
-                        reject(crypticUsernamePasswordError)
-                    })
+                // compare(password, user[0].password_hash)
+                //     .then((result) => {
+                //         if(result && user[0] && user[0].id <= admins.length && admins.includes(user[0].first_name)) {
+                //             user[0].admin = true
+                //         }
+                //         delete user[0].password_hash
+                //         //resolve the user object
+                //         resolve(user[0])
+                //     })
+                //     .catch((error) => {
+                //         console.log(error)
+                //         reject(crypticUsernamePasswordError)
+                //     })
+                resolve(user)
             } else {
                 reject(crypticUsernamePasswordError)
             }

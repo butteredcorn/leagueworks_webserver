@@ -10,10 +10,22 @@ module.exports = function () {
     app.use(bodyParser.urlencoded({extended: true}))
     app.use(cookieParser())
 
+    //initialize db client
     const db = require('./database/mongo-db')
-    const {signUpUser} = require('./controllers/authentication/login-signup')
-    const {createNewToken} = require('./controllers/authentication/json-web-token')
+    db.mongoStart()
 
+    const loginSignUpRoute = require('./routes/authentication/login-signup-endpoint')
+
+    app.use('/auth', loginSignUpRoute)
+
+    app.get('/database/close', async (req, res) => {
+        try {
+            await db.mongoClose()
+            res.send('database connection closed')
+        } catch (error) {
+            res.send(error)
+        }
+    })
 
     app.get('/database/reset', async (req, res) => {
         try {
@@ -32,26 +44,6 @@ module.exports = function () {
             const user = await db.getUserByEmail({email: 'test@test.com'})
             console.log(user)
             res.send(user)
-        } catch (error) {
-            if(error) {
-                res.send(error)
-            }
-        }
-    })
-
-    app.get('/database/createUser', async (req, res) => {
-        try {
-            //await db.createUser({first_name: 'justin', last_name: 'admin', birth_date: 'DOB', phone_number: '604-888-8888', email: 'test@test.com', password: 'best_password'})
-            await signUpUser({first_name: 'justin', last_name: 'admin', birth_date: 'DOB', phone_number: '604-888-8888', email: 'test@test.com', password: 'best_password'})
-            .then((newUser) => {
-                return createNewToken({...newUser})
-            })
-            .then((token) => {
-                res.cookie('token', token, { maxAge: 999999999})
-            })
-            .then(() => {
-                res.send("signed up and cookie created.")
-            })
         } catch (error) {
             if(error) {
                 res.send(error)
