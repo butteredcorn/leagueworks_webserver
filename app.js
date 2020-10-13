@@ -64,7 +64,15 @@ module.exports = function () {
         }
     })
 
-    
+    app.get('/api/match', async (req, res) => {
+        try {
+            const { matchTeams } = require('./controllers/scheduling/match-teams')
+            res.send(matchTeams())
+        } catch (error) {
+            console.log(error)
+            res.send(error)
+        } 
+    })
 
     app.get('/api/places', async (req, res) => {
         try {
