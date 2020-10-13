@@ -11,7 +11,7 @@ const mongoStart = async () => {
         const db = await client.db(process.env.DB_NAME);
 
         console.log('db ready')
-        console.log(db)
+        //console.log(db)
     } catch(error) {
         if (error) {
             console.log(error)
@@ -60,7 +60,6 @@ const getUserByEmail = async ({email}) => {
                 if(err) {
                     reject(err)
                 }
-                console.log(doc)
                 resolve(doc)
             })
     

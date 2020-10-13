@@ -6,7 +6,7 @@ const {MINIMUM_AGE_REQUIREMENT} = require('../../globals').platform_restrictions
 
 /**
  * create user and put into database
- * and then log them in
+ * return newly created user
  * 
  */
 const signUpUser = ({first_name, last_name, birth_date, phone_number, email, password}) => {
@@ -47,29 +47,42 @@ const signUpUser = ({first_name, last_name, birth_date, phone_number, email, pas
     })
 }
 
-const loginUser = (email, password) => {
+// {
+//     _id: 5f77e41c9de71f5b23d6fa42,
+//     first_name: 'justin',
+//     last_name: 'admin',
+//     birth_date: 'DOB',
+//     phone_number: '604-888-8888',
+//     email: 'test@test.com',
+//     password_hash: 'some_password_hash',
+//     leagues: [],
+//     messages: []
+//   }
+
+/**
+ * 
+ * check to make sure user exists and passwords match
+ * then return user
+ */
+const loginUser = ({email, password}) => {
     return new Promise(async (resolve, reject) => {
         const crypticUsernamePasswordError = "Incorrect email and password combination. Who knows what the issue is. Â¯\_(ãƒ„)_/Â¯"
         try {
             //find the user by email
-            //await db.createConnection()
             const user = await db.getUserByEmail({email})
-            console.log(user)
             if (user) {
                 //user confirmed, then try password
-                // compare(password, user[0].password_hash)
-                //     .then((result) => {
-                //         if(result && user[0] && user[0].id <= admins.length && admins.includes(user[0].first_name)) {
-                //             user[0].admin = true
-                //         }
-                //         delete user[0].password_hash
-                //         //resolve the user object
-                //         resolve(user[0])
-                //     })
-                //     .catch((error) => {
-                //         console.log(error)
-                //         reject(crypticUsernamePasswordError)
-                //     })
+                compare(password, user.password_hash)
+                    .then((result) => {
+                        //check for admin here
+                        delete user.password_hash
+                        //resolve the user object
+                        resolve(user)
+                    })
+                    .catch((error) => {
+                        console.log(error)
+                        reject(crypticUsernamePasswordError)
+                    })
                 resolve(user)
             } else {
                 reject(crypticUsernamePasswordError)
@@ -77,8 +90,6 @@ const loginUser = (email, password) => {
         } catch(error) {
             //error with db.getUsers
             reject(error)
-        } finally {
-            //await db.closeConnection()
         }
     })
 }

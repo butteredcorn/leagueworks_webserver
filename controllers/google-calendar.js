@@ -1,6 +1,6 @@
 
-const {google} = require('googleapis')
-const {OAuth2} = google.auth
+const { google } = require('googleapis')
+const { OAuth2 } = google.auth
 const oAuth2Client = new OAuth2(process.env.OAUTH_CLIENT_ID, process.env.OAUTH_SECRET)
 oAuth2Client.setCredentials({refresh_token: process.env.TEST_TOKEN})
 const calendar = google.calendar({version: 'v3', auth: oAuth2Client})

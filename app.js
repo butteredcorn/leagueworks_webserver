@@ -11,10 +11,15 @@ module.exports = function () {
     app.use(cookieParser())
 
     //initialize db client
+    //ip address must be whitelisted
     const db = require('./database/mongo-db')
-    db.mongoStart()
+    //db.mongoStart()
 
     const loginSignUpRoute = require('./routes/authentication/login-signup-endpoint')
+
+    const { google_places_url } = require('./globals').google_urls //takes a placeID
+    const { getPlaceDetails } = require('./controllers/google-places')
+    const places = require('./database/assets/google-place-id')
 
     app.use('/auth', loginSignUpRoute)
 
@@ -48,6 +53,23 @@ module.exports = function () {
             if(error) {
                 res.send(error)
             }
+        }
+    })
+
+    app.get('/api/places', async (req, res) => {
+        try {
+            //const details = await getPlaceDetails(google_places_url(places.killarney_community_center.id))
+            console.log(places.killarney_community_center.id)
+            console.log(google_places(places.killarney_community_center.id))
+            console.log(details)
+            // const result = {
+            //     place_id: places.killarney_community_center.id,
+            //     url: google_places(places.killarney_community_center.id),
+            //     details: details
+            // }
+            // res.send(result)
+        } catch (error) {
+            res.send(error)
         }
     })
 
