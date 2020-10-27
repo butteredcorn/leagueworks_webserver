@@ -24,7 +24,7 @@ const match = (numTeams, teams) => {
     for (let j = 0; j < numTeams - 1; j += 1) {
       matches[j] = []; // create inner match array for round j
       for (let i = 0; i < numTeams / 2; i += 1) {
-        if (teams[i] !== -1 && teams[numTeams - 1 - i] !== -1) {
+        if (JSON.stringify(teams[i]) !== JSON.stringify(dummyTeam) && JSON.stringify(teams[numTeams - 1 - i]) !== JSON.stringify(dummyTeam)) {
           matches[j].push([teams[i], teams[numTeams - 1 - i]]); // insert pair as a match
         }
       }

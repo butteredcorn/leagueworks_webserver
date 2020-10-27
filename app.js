@@ -16,12 +16,14 @@ module.exports = function () {
     //db.mongoStart()
 
     const loginSignUpRoute = require('./routes/authentication/login-signup-endpoint')
+    const googleCalendarRoute = require('./routes/calendar/google-calendar')
 
     const { google_places } = require('./globals').google_urls //takes a placeID
     const { getPlaceDetails } = require('./controllers/google-places')
     const { killarney_community_center } = require('./database/assets/google-place-id')
 
     app.use('/auth', loginSignUpRoute)
+    app.use('/api/calendar', googleCalendarRoute)
 
     app.get('/database/close', async (req, res) => {
         try {
@@ -110,46 +112,46 @@ module.exports = function () {
         }
     })
 
-    app.get('/api/calendar-test', async (req, res) => {
-        try {
-            const {createNewEvent} = require('./controllers/google-calendar')
+    // app.get('/api/calendar-test', async (req, res) => {
+    //     try {
+    //         const {createNewEvent} = require('./controllers/google-calendar')
 
-            //the event object
-            //import data from front end ie. form to declare eventStartTime and eventEndTime
-            const eventStartTime = new Date()
-            const eventEndTime = new Date()
-            const timeZone = 'America/Vancouver'
-            const defaultColorID = 1
+    //         //the event object
+    //         //import data from front end ie. form to declare eventStartTime and eventEndTime
+    //         const eventStartTime = new Date()
+    //         const eventEndTime = new Date()
+    //         const timeZone = 'America/Vancouver'
+    //         const defaultColorID = 1
 
 
-            //`eventStartTime.getDay() + 2` sets the day for tomorrow
-            eventStartTime.setDate(eventStartTime.getDay() + 2)
+    //         //`eventStartTime.getDay() + 2` sets the day for tomorrow
+    //         eventStartTime.setDate(eventStartTime.getDay() + 2)
 
-            //we will make the end time end 1 hour later
-            eventEndTime.setDate(eventEndTime.getDay() + 2)
-            eventEndTime.setMinutes(eventEndTime.getMinutes() + 60)
+    //         //we will make the end time end 1 hour later
+    //         eventEndTime.setDate(eventEndTime.getDay() + 2)
+    //         eventEndTime.setMinutes(eventEndTime.getMinutes() + 60)
 
-            const theEvent = {
-                summary: "Basketball Game",
-                location: "6260 Killarney St, Vancouver, BC V5S 2X7",
-                description: "Basketball Game between the Lakers and Nuggets.",
-                colorId: defaultColorID, //there are 11 different colorIDs
-                start: {
-                    dateTime: eventStartTime, //equal to date and time
-                    timeZone: timeZone//standard javascript timezone
-                },
-                end: {
-                    dateTime: eventEndTime,
-                    timeZone: timeZone
-                }
-            }
-            createNewEvent(theEvent)
+    //         const theEvent = {
+    //             summary: "Basketball Game",
+    //             location: "6260 Killarney St, Vancouver, BC V5S 2X7",
+    //             description: "Basketball Game between the Lakers and Nuggets.",
+    //             colorId: defaultColorID, //there are 11 different colorIDs
+    //             start: {
+    //                 dateTime: eventStartTime, //equal to date and time
+    //                 timeZone: timeZone//standard javascript timezone
+    //             },
+    //             end: {
+    //                 dateTime: eventEndTime,
+    //                 timeZone: timeZone
+    //             }
+    //         }
+    //         createNewEvent(theEvent)
 
-            res.send("complete.")
-        } catch (error) {
-            console.log(error)
-        }
-    })
+    //         res.send("complete.")
+    //     } catch (error) {
+    //         console.log(error)
+    //     }
+    // })
 
     return server
 }
