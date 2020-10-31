@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router()
-const {createNewEvent, createNewCalendar, getBCHolidays} = require('../../controllers/google-calendar')
+const {createNewEvent, createNewCalendar, getBCHolidays, batchEvents} = require('../../controllers/google-calendar')
 
 router.get('/test', async(req, res) => {
     try {
@@ -34,7 +34,7 @@ router.get('/test', async(req, res) => {
                 timeZone: timeZone
             }
         }
-        createNewEvent(theEvent)
+        createNewEvent('primary', theEvent)
 
         res.send("complete.")
     } catch (error) {
@@ -61,6 +61,18 @@ router.get('/holidays', async (req, res) => {
         res.send({data: holidays})
     } catch (error) {
         res.send(error)
+    }
+})
+
+router.get('/uploadHolidays', async (req, res) => {
+    try {
+        const events = require('../../controllers/bc-holidays')
+
+        const result = await batchEvents("sf1csho2kq886b3h6esuptk7u8@group.calendar.google.com", events)
+        console.log(result)
+        res.send(result)
+    } catch (err) {
+        res.send(err)
     }
 })
 
