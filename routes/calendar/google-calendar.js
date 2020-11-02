@@ -2,7 +2,7 @@ const express = require('express')
 const router = express.Router()
 const {createNewEvent, createNewCalendar, getBCHolidays, batchEvents} = require('../../controllers/google-calendar')
 
-router.get('/test', async(req, res) => {
+router.post('/test', async(req, res) => {
     try {
         
         //the event object
@@ -68,7 +68,7 @@ router.get('/uploadHolidays', async (req, res) => {
     try {
         const events = require('../../controllers/bc-holidays')
 
-        const result = await batchEvents("sf1csho2kq886b3h6esuptk7u8@group.calendar.google.com", events)
+        const result = await batchEvents("sf1csho2kq886b3h6esuptk7u8@group.calendar.google.com", events, process.env.ACCESS_TOKEN)
         console.log(result)
         res.send(result)
     } catch (err) {

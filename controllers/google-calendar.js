@@ -161,47 +161,23 @@ const createNewEvent = async (calendarID, newEvent) => {
     }
 }
 
-const batchEvents = (calendarID, events) => {
+/**
+ * 
+ * @param {*} calendarID - google calendar I1   
+ * @param { array } events  - array of event objects
+ */
+const batchEvents = (calendarID, events, accessToken) => {
     return new Promise(async (resolve, reject) => {
         try {
 
-            // console.log(oAuth2Client)
-            // console.log(oAuth2Client.credentials.refresh_token)
-
-            const eventStartTime = new Date()
-            const eventEndTime = new Date()
-            const timeZone = 'America/Vancouver'
-            const defaultColorID = 1
-
-
-            //`eventStartTime.getDay() + 2` sets the day for tomorrow
-            eventStartTime.setDate(eventStartTime.getDay() + 2)
-
-            //we will make the end time end 1 hour later
-            eventEndTime.setDate(eventEndTime.getDay() + 2)
-            eventEndTime.setMinutes(eventEndTime.getMinutes() + 60)
-
-            const theEvent = {
-                            summary: "Basketball Game",
-                            location: "6260 Killarney St, Vancouver, BC V5S 2X7",
-                            description: "Basketball Game between the Lakers and Nuggets.",
-                            colorId: defaultColorID, //there are 11 different colorIDs
-                            start: {
-                                dateTime: eventStartTime, //equal to date and time
-                                timeZone: timeZone//standard javascript timezone
-                            },
-                            end: {
-                                dateTime: eventEndTime,
-                                timeZone: timeZone
-                            }
-                        }
+            //console.log(accessToken)
 
             const batch = new Batchelor({
                 // Any batch uri endpoint in the form: https://www.googleapis.com/batch/<api>/<version>
                 'uri':'https://www.googleapis.com/batch/calendar/v3',
                 'method':'POST',
                 'auth': {
-                    'bearer': process.env.ACCESS_TOKEN  //MUST BE OAUTH ACCESS TOKEN, NOT REFRESH TOKEN
+                    'bearer': accessToken  //MUST BE OAUTH ACCESS TOKEN, NOT REFRESH TOKEN
                 },
                 'headers': {
                     // 'Authorization': `Bearer ${oAuth2Client.credentials.refresh_token}`,
@@ -210,22 +186,24 @@ const batchEvents = (calendarID, events) => {
             });
 
             //foreach add every holiday
-            batch.add({
-                'method':'POST',
-                'path':`/calendar/v3/calendars/${calendarID}/events`,
-                'parameters':{
-                    'Content-Type':'application/json;',
-                    'body': BC_HOLIDAYS[0]
-                }
-                ,
-                'callback': function(response){
-                    resolve(response);
-                    if(response.body.error) {
-                        reject(response.body.error)
+            events.forEach((event, index) => {
+                batch.add({
+                    'method':'POST',
+                    'path':`/calendar/v3/calendars/${calendarID}/events`,
+                    'parameters':{
+                        'Content-Type':'application/json;',
+                        'body': event
                     }
-                }
+                    ,
+                    'callback': function(response){
+                        resolve(response);
+                        if(response.body.error) {
+                            reject(response.body.error)
+                        }
+                    }
+                })
             })
-
+            
             batch.run((err, res) => {
                 if(err) {
                     reject(err)
