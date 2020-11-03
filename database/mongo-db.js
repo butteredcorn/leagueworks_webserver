@@ -1,4 +1,5 @@
 const MongoClient = require('mongodb').MongoClient;
+const ObjectID = require('mongodb').ObjectID;
 const uri = process.env.MONGO_DB_URI;
 const client = new MongoClient(uri, { useNewUrlParser: true });
 
@@ -31,22 +32,58 @@ const mongoClose = async() => {
     }
 }
 
+const loadArenas = (arenas) => {
+    return new Promise(async(resolve, reject) => {
+        try {
+            arenas.forEach(async(arena, index) => {
+                await db.collection('arenas').insertOne({arena_id: arena.google_place_id, name: arena.name, address: arena.address, phone_number: arena.phone_number, location: arena.location, photos: arena.photos, google_rating: arena.rating}, (err, res) => {
+                    if (err) reject(err)
+                })
+            })
+            resolve('arenas loaded.')
+        } catch (err) {
+            reject(err)
+        }
+    })
+}
+
 const resetDatabase =  () => {
     return new Promise(async (resolve, reject) => {
         try {           
             if (!db) await mongoStart()
 
+            //drop all tables
             await db.collection('users').drop((error, res) => {
                 if (error) reject(error)
                 console.log(res)
-                // result.message.users = res
             })
             await db.collection('leagues').drop((error, res) => {
                 if (error) reject(error)
                 console.log(res)
-                // result.message.leagues = res
+            })
+            await db.collection('teams').drop((error, res) => {
+                if (error) reject(error)
+                console.log(res)
+            })
+            await db.collection('arenas').drop((error, res) => {
+                if (error) reject(error)
+                console.log(res)
             })
 
+
+            //re-initialize tables
+            await db.createCollection('arenas', (error, res) => {
+                if (error) reject(error)
+                console.log(res.namespace)
+            }).then(() => {
+                //load arenas from local storage (development only)
+                const arenas = require('./assets/arenas')
+                loadArenas(arenas)
+            })
+            await db.createCollection('teams', (error, res) => {
+                if (error) reject(error)
+                console.log(res.namespace)
+            })
             await db.createCollection('leagues', (error, res) => {
                 if (error) reject(error)
                 console.log(res.namespace)
@@ -63,19 +100,30 @@ const resetDatabase =  () => {
     })
 }
 
-const getUserByEmail = ({email}) => {
+const getUser = ({user_id, email}) => {
     return new Promise (async (resolve, reject) => {
         try {  
             //console.log(db)
             if (!db) await mongoStart()
 
-            await db.collection('users').findOne({email: email}, (err, res) => {
-                if(err) {
-                    reject(err)
-                }
-                resolve(res)
-            })
-    
+            if (email) {
+                await db.collection('users').findOne({email: email}, (err, res) => {
+                    if(err) {
+                        reject(err)
+                    }
+                    resolve(res)
+                })
+                //could introduce fault tolerance here by using another if statement for if id exists but no retrieval, then try again with email*
+            } else if (user_id) {
+                await db.collection('users').findOne({_id: ObjectID(user_id)}, (err, res) => {
+                    if(err) {
+                        reject(err)
+                    }
+                    resolve(res)
+                })
+            } else {
+                throw new Error(`Required user_id or email. It was ${{user_id, email}}`)
+            }
         } catch(error) {
             reject(error)
         }
@@ -99,13 +147,16 @@ const createUser = ({first_name, last_name, birth_date, phone_number, email, pas
     })
 }
 
+//create update function for user to join a league
+//create update function for appending a message to a user?
+
 const getLeague = ({league_id, email}) => {
     return new Promise (async (resolve, reject) => {
         try {
             if (!db) await mongoStart()
 
             if (league_id) {
-                await db.collection('leagues').findOne({league_id: league_id}, (err, doc) => {
+                await db.collection('leagues').findOne({_id: ObjectID(league_id)}, (err, doc) => {
                     if(err) {
                         reject(err)
                     }
@@ -144,12 +195,147 @@ const createLeague = ({league_name, phone_number, email, sport_type}) => {
     })
 }
 
+const getTeam = ({team_id, email}) => {
+    return new Promise (async (resolve, reject) => {
+        try {
+            if (!db) await mongoStart()
+
+            if (team_id) {
+                await db.collection('teams').findOne({_id: ObjectID(team_id)}, (err, doc) => {
+                    if(err) {
+                        reject(err)
+                    }
+                    resolve(doc)
+                })
+            } else if (email) {
+                await db.collection('teams').findOne({email: email}, (err, doc) => {
+                    if(err) {
+                        reject(err)
+                    }
+                    resolve(doc)
+                })
+            } else {
+                throw new Error("Please specify either valid ID or email.")
+            }
+    
+        } catch(error) {
+            reject(error)
+        }
+    })
+}
+
+//initialize players to empty array?
+const createTeam = ({league_id, team_name, phone_number, email, captain_id, players}) => {
+    return new Promise(async (resolve, reject) => {
+        try {            
+            if (!db) await mongoStart()
+            await db.collection('teams').insertOne({league_id, team_name, phone_number, email, captain_id, players}, (err, res) => {
+                if(err) reject(err)
+                resolve(res.ops)
+            })
+        } catch(error) {
+            if (error) {
+                reject(error)
+            }
+        }
+    })
+}
+
+const getArena = ({arena_id, email}) => {
+    return new Promise (async (resolve, reject) => {
+        try {
+            if (!db) await mongoStart()
+
+            if (arena_id) {
+                await db.collection('arenas').findOne({_id: ObjectID(arena_id)}, (err, doc) => {
+                    if(err) {
+                        reject(err)
+                    }
+                    resolve(doc)
+                })
+            } else if (email) {
+                await db.collection('arenas').findOne({email: email}, (err, doc) => {
+                    if(err) {
+                        reject(err)
+                    }
+                    resolve(doc)
+                })
+            } else {
+                throw new Error("Please specify either valid ID or email.")
+            }
+    
+        } catch(error) {
+            reject(error)
+        }
+    })
+}
+
+const createArena = ({email, phone_number, latitude, longitude, thumbnail_link, description}) => {
+    return new Promise(async (resolve, reject) => {
+        try {            
+            if (!db) await mongoStart()
+            await db.collection('arenas').insertOne({email, phone_number, latitude, longitude, thumbnail_link, description}, (err, res) => {
+                if(err) reject(err)
+                resolve(res.ops)
+            })
+        } catch(error) {
+            if (error) {
+                reject(error)
+            }
+        }
+    })
+}
+
+const getMatch = ({match_id}) => {
+    return new Promise (async (resolve, reject) => {
+        try {
+            if (!db) await mongoStart()
+
+            if (match_id) {
+                await db.collection('matches').findOne({_id: ObjectID(match_id)}, (err, doc) => {
+                    if(err) {
+                        reject(err)
+                    }
+                    resolve(doc)
+                })
+            } else {
+                throw new Error(`Please specify valid match_id. It was ${match_id}.`)
+            }
+    
+        } catch(error) {
+            reject(error)
+        }
+    })
+}
+
+const createMatch = ({season_id, home_id, away_id, start_time, end_time, arena_id}) => {
+    return new Promise(async (resolve, reject) => {
+        try {            
+            if (!db) await mongoStart()
+            await db.collection('matches').insertOne({season_id, home_id, away_id, start_time, end_time, arena_id}, (err, res) => {
+                if(err) reject(err)
+                resolve(res.ops)
+            })
+        } catch(error) {
+            if (error) {
+                reject(error)
+            }
+        }
+    })
+}
+
 module.exports = {
     mongoStart,
     mongoClose,
     resetDatabase,
-    getUserByEmail,
+    getUser,
     createUser,
     getLeague,
     createLeague,
+    getTeam,
+    createTeam,
+    getArena,
+    createArena,
+    getMatch,
+    createMatch
 }

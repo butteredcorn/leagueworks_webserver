@@ -1,6 +1,7 @@
 const axios = require('axios')
+const { google_places } = require('../globals').google_urls
 
-const getPlaceDetails = (url) => {
+const getPlaceDetailsRaw = (url) => {
     return new Promise(async(resolve, reject) => {
         try {
             if(url) {
@@ -17,8 +18,57 @@ const getPlaceDetails = (url) => {
     })
 }
 
+/**
+ * 
+ * @param {[{urls}]} for each arena in arenas, get the google details, format and save them. 
+ */
+const getArenasByIDs = (arenaIDs) => {
+   return new Promise(async(resolve, reject) => {
+      try {
+         const arenas = [];
+         if(!Array.isArray(arenas)) throw new Error(`arenaIDs must be of type array. It was ${arenaIDs}.`)
+         for(arena of arenaIDs) {
+            
+            const url = google_places(arena.id)
+
+            //console.log(url)
+
+            const result = await getPlaceDetailsRaw(url)
+
+            //console.log(result)
+
+            const data = result.data.result
+
+            const photos = []
+
+            for (let i = 0; i < data.photos.length; i++) {
+               photos.push({photo_ref: data.photos[i].photo_reference, photo_link: null})
+            }
+
+            arenas.push({
+               google_place_id: arena.id,
+               name: data.name,
+               address: data.formatted_address,
+               phone_number: data.formatted_phone_number,
+               location: {
+                  lat: data.geometry.location.lat,
+                  long: data.geometry.location.lng
+               },
+               photos: photos,
+               rating: data.rating
+            })
+         };
+
+         resolve(arenas);
+      } catch (err) {
+         reject(err)
+      }
+   })
+}
+
 module.exports = {
-    getPlaceDetails
+   getPlaceDetailsRaw,
+    getArenasByIDs
 }
 
 /**

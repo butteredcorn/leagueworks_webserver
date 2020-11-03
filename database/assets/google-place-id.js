@@ -1,17 +1,21 @@
-module.exports = {
-    hillcrest_community_center: {
-        id: 'ChIJ2yCdufVzhlQRhz5y_ULhm38'
+module.exports = [
+    {
+        name: "hillcrest_community_center",
+        id: 'ChIJC42Qo_VzhlQRb_5Bs_qsAhc'
     },
 
-    killarney_community_center: {
+    {
+        name: "killarney_community_center",
         id: 'ChIJlxeQ4oJ2hlQRgtJxfdNoGTM'
     },
 
-    memorial_south_park: {
+    {
+        name: "memorial_south_park",
         id: 'ChIJ_V-LvhZ0hlQRPyVZcd83YiY'
     },
 
-    collingwood_neighbourhood_house: {
+    {
+        name: "collingwood_neighbourhood_house",
         id: 'ChIJs-mPxZN2hlQRmNjpsIiN45Y'
     },
-}
+]

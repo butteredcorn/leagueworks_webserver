@@ -69,7 +69,7 @@ const loginUser = ({email, password}) => {
         const crypticUsernamePasswordError = "Incorrect email and password combination. Who knows what the issue is. Â¯\_(ãƒ„)_/Â¯"
         try {
             //find the user by email
-            const user = await db.getUserByEmail({email})
+            const user = await db.getUser({email})
             if (user) {
                 //user confirmed, then try password
                 compare(password, user.password_hash)
@@ -99,7 +99,7 @@ const loginUser = ({email, password}) => {
 const emailAlreadyExist = (email) => {
     return new Promise(async (resolve, reject) => {
         try {
-            const emailMatch = await db.getUserByEmail({email: email})
+            const emailMatch = await db.getUser({email: email})
 
             if (emailMatch != null) {
                 reject (new Error('Email already taken.'))
