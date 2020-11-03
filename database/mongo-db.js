@@ -5,19 +5,22 @@ const client = new MongoClient(uri, { useNewUrlParser: true });
 //(node:41087) DeprecationWarning: current Server Discovery and Monitoring engine is deprecated, and will be removed in a future version. To use the new Server Discover and Monitoring engine, pass option { useUnifiedTopology: true } to the MongoClient constructor.
 
 // may need to move data connection to the endpoint for stability
-const mongoStart = async () => {
-    try {
-        await client.connect();
-        const db = await client.db(process.env.DB_NAME);
 
-        console.log('db ready')
-        //console.log(db)
-    } catch(error) {
-        if (error) {
-            console.log(error)
+let db;
+
+function mongoStart() {
+    return new Promise(async (resolve, reject) => {
+        try {
+            await client.connect();
+            db = await client.db(process.env.DB_NAME);
+            resolve('db ready')
+        } catch(error) {
+            if (error) {
+                reject(error)
+            }
         }
-    }
-}
+    })
+}    
 
 const mongoClose = async() => {
     try {
@@ -28,22 +31,31 @@ const mongoClose = async() => {
     }
 }
 
-const resetDatabase = async () => {
+const resetDatabase =  () => {
     return new Promise(async (resolve, reject) => {
-        try {
-            const db = await client.db(process.env.DB_NAME);
-            
-            const result = {}
+        try {           
+            if (!db) await mongoStart()
 
-            await db.collection('users').drop((error, response) => {
+            await db.collection('users').drop((error, res) => {
                 if (error) reject(error)
-                result.message = {msg1: response}
+                console.log(res)
+                // result.message.users = res
             })
-            await db.createCollection('users', (error, response) => {
+            await db.collection('leagues').drop((error, res) => {
                 if (error) reject(error)
-                result.message.msg2 = response
+                console.log(res)
+                // result.message.leagues = res
             })
-    
+
+            await db.createCollection('leagues', (error, res) => {
+                if (error) reject(error)
+                console.log(res.namespace)
+            })
+            await db.createCollection('users', (error, res) => {
+                if (error) reject(error)
+                console.log(res.namespace)
+            })
+            
             resolve(result)
         } catch (error) {
             reject(error)
@@ -51,16 +63,17 @@ const resetDatabase = async () => {
     })
 }
 
-const getUserByEmail = async ({email}) => {
+const getUserByEmail = ({email}) => {
     return new Promise (async (resolve, reject) => {
-        try {
-            const db = await client.db(process.env.DB_NAME);
-    
-            await db.collection('users').findOne({email: email}, (err, doc) => {
+        try {  
+            //console.log(db)
+            if (!db) await mongoStart()
+
+            await db.collection('users').findOne({email: email}, (err, res) => {
                 if(err) {
                     reject(err)
                 }
-                resolve(doc)
+                resolve(res)
             })
     
         } catch(error) {
@@ -69,14 +82,60 @@ const getUserByEmail = async ({email}) => {
     })
 }
 
-const createUser = async ({first_name, last_name, birth_date, phone_number, email, password_hash, leagues, messages}) => {
+const createUser = ({first_name, last_name, birth_date, phone_number, email, password_hash, leagues, messages}) => {
     return new Promise(async (resolve, reject) => {
         try {
-            const db = await client.db(process.env.DB_NAME);
-            const result = await db.collection('users').insertOne({first_name, last_name, birth_date, phone_number, email, password_hash, leagues, messages}, (error) => {
-                reject(error)
+            if (!db) await mongoStart()
+
+            await db.collection('users').insertOne({first_name, last_name, birth_date, phone_number, email, password_hash, leagues, messages}, (err, res) => {
+                if (err) reject(err)
+                resolve(res.ops)
             })
-            resolve(result)
+        } catch(error) {
+            if (error) {
+                reject(error)
+            }
+        }
+    })
+}
+
+const getLeague = ({league_id, email}) => {
+    return new Promise (async (resolve, reject) => {
+        try {
+            if (!db) await mongoStart()
+
+            if (league_id) {
+                await db.collection('leagues').findOne({league_id: league_id}, (err, doc) => {
+                    if(err) {
+                        reject(err)
+                    }
+                    resolve(doc)
+                })
+            } else if (email) {
+                await db.collection('leagues').findOne({email: email}, (err, doc) => {
+                    if(err) {
+                        reject(err)
+                    }
+                    resolve(doc)
+                })
+            } else {
+                throw new Error("Please specify either valid ID or email.")
+            }
+    
+        } catch(error) {
+            reject(error)
+        }
+    })
+}
+
+const createLeague = ({league_name, phone_number, email, sport_type}) => {
+    return new Promise(async (resolve, reject) => {
+        try {            
+            if (!db) await mongoStart()
+            await db.collection('leagues').insertOne({league_name, phone_number, email, sport_type}, (err, res) => {
+                if(err) reject(err)
+                resolve(res.ops)
+            })
         } catch(error) {
             if (error) {
                 reject(error)
@@ -91,4 +150,6 @@ module.exports = {
     resetDatabase,
     getUserByEmail,
     createUser,
+    getLeague,
+    createLeague,
 }
