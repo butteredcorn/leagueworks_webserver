@@ -1,6 +1,7 @@
 module.exports = {
     authentication: {
         bcryptSaltRounds: 12,
+        access_token_expiry_in_days: 7, //days
     },
 
     platform_restrictions: {

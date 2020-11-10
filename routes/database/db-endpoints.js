@@ -1,4 +1,5 @@
-const express = require('express')
+const express = require('express');
+const { protectedPostRoute } = require('../../controllers/authentication/routing');
 const router = express.Router()
 
 //initialize db client
@@ -19,7 +20,7 @@ router.get('/*', async (req, res) => {
 
 //create an error for not authenticated post route.
 
-router.post('/open', async (req, res) => {
+router.post('/open', protectedPostRoute, async (req, res) => {
     try {
         await db.mongoStart()
         res.send('database connection opened')
@@ -29,7 +30,7 @@ router.post('/open', async (req, res) => {
     }
 })
 
-router.post('/close', async (req, res) => {
+router.post('/close', protectedPostRoute, async (req, res) => {
     try {
         await db.mongoClose()
         res.send('database connection closed')
@@ -40,7 +41,7 @@ router.post('/close', async (req, res) => {
 })
 
 //check for administrator privileges
-router.post('/reset', async (req, res) => {
+router.post('/reset', protectedPostRoute, async (req, res) => {
     try {
 
         const result = await db.resetDatabase()
@@ -53,14 +54,17 @@ router.post('/reset', async (req, res) => {
     
 })
 
-router.post('/read/user', async (req, res) => {
+router.post('/read/user', protectedPostRoute, async (req, res) => {
     try {
+        //the queried about user
         if (!req.body.user) throw new Error(`No user object found. req.body.user was ${req.body.user}`)
+
+        //console.log(req.user) //the logged in user
 
         if (req.body && req.body.user) {
             const user = await db.getUser({user_id: req.body.user.user_id, email: req.body.user.email})
             delete user.password_hash
-            if (logging) console.log(user)
+            if (logging) console.log({queried_user: user, authenticated_user: req.user})
             res.send(user)
         }
 
@@ -85,7 +89,7 @@ router.post('/read/user', async (req, res) => {
 //     })
 // });
 
-router.post('/create/user', async (req, res) => {
+router.post('/create/user', protectedPostRoute, async (req, res) => {
     try {
 
         if (!req.body.user) throw new Error(`No user object found. req.body.user was ${req.body.user}`)
@@ -110,7 +114,7 @@ router.post('/create/user', async (req, res) => {
     }
 })
 
-router.post('/read/league', async (req, res) => {
+router.post('/read/league', protectedPostRoute, async (req, res) => {
     try {
         if (!req.body.league) throw new Error(`No league object found. req.body.league was ${req.body.league}`)
 
@@ -125,7 +129,7 @@ router.post('/read/league', async (req, res) => {
     }
 })
 
-router.post('/create/league', async (req, res) => {
+router.post('/create/league', protectedPostRoute, async (req, res) => {
     try {
         //console.log(req.body)
         if (!req.body.league) throw new Error(`No league object found. req.body.league was ${req.body.league}`)
@@ -147,7 +151,7 @@ router.post('/create/league', async (req, res) => {
 })
 
 
-router.post('/read/team', async (req, res) => {
+router.post('/read/team', protectedPostRoute, async (req, res) => {
     try {
         if (!req.body.team) throw new Error(`No team object found. req.body.team was ${req.body.team}`)
 
@@ -162,14 +166,14 @@ router.post('/read/team', async (req, res) => {
     }
 })
 
-router.post('/create/team', async (req, res) => {
+router.post('/create/team', protectedPostRoute, async (req, res) => {
     try {
         //console.log(req.body)
         if (!req.body.team) throw new Error(`No team object found. req.body.team was ${req.body.team}`)
 
         if(req.body && req.body.team) {
             const result = await db.createTeam({
-                team_id: req.body.team.team_id,
+                league_id: req.body.team.league_id,
                 phone_number: req.body.team.phone_number,
                 email: req.body.team.email,
                 captain_id: req.body.team.captain_id,
@@ -184,7 +188,7 @@ router.post('/create/team', async (req, res) => {
     }
 })
 
-router.post('/read/arena', async (req, res) => {
+router.post('/read/arena', protectedPostRoute, async (req, res) => {
     try {
         if (!req.body.arena) throw new Error(`No arena object found. req.body.arena was ${req.body.arena}`)
 
@@ -200,7 +204,7 @@ router.post('/read/arena', async (req, res) => {
 })
 
 //implement
-router.post('/create/arena', async (req, res) => {
+router.post('/create/arena', protectedPostRoute, async (req, res) => {
     try {
         //console.log(req.body)
         if (!req.body.arena) throw new Error(`No arena object found. req.body.arena was ${req.body.arena}`)
@@ -220,7 +224,7 @@ router.post('/create/arena', async (req, res) => {
     }
 })
 
-router.post('/read/match', async (req, res) => {
+router.post('/read/match', protectedPostRoute, async (req, res) => {
     try {
         if (!req.body.match) throw new Error(`No match object found. req.body.match was ${req.body.match}`)
 
@@ -235,7 +239,7 @@ router.post('/read/match', async (req, res) => {
     }
 })
 
-router.post('/create/match', async (req, res) => {
+router.post('/create/match', protectedPostRoute, async (req, res) => {
     try {
         //console.log(req.body)
         if (!req.body.match) throw new Error(`No match object found. req.body.match was ${req.body.match}`)
