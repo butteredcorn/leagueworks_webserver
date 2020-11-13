@@ -1,8 +1,8 @@
 {
-  "name": "justintime-webserver",
+  "name": "leagueworks-webserver",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "server.js",
   "dependencies": {
     "axios": "^0.20.0",
     "batchelor": "^2.0.2",
