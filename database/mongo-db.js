@@ -359,10 +359,7 @@ const updateMatch = ({match_id, updates}) => {
             if (!db) await mongoStart()
 
             if (match_id && updates) {
-
-                const formattedUpdates = formatUpdates(updates)
-
-                await db.collection('matches').findOneAndUpdate({_id: ObjectID(match_id)}, {$set: formattedUpdates}, {returnNewDocument: true}, (err, result) => {
+                await db.collection('matches').findOneAndUpdate({_id: ObjectID(match_id)}, {$set: formatUpdates(updates)}, {returnOriginal: false}, (err, result) => {
                     if(err) reject(err)
                     resolve(result.value)
                 })
