@@ -76,6 +76,10 @@ const resetDatabase =  () => {
                 if (error) reject(error)
                 console.log(res)
             })
+            await db.collection('messages').drop((error, res) => {
+                if (error) reject(error)
+                console.log(res)
+            })
             await db.collection('season_schedules').drop((error, res) => {
                 if (error) reject(error)
                 console.log(res)
@@ -89,22 +93,28 @@ const resetDatabase =  () => {
                 console.log(res)
             })
             
+            
 
 
             //re-initialize tables
             await db.createCollection('arenas', (error, res) => {
                 if (error) reject(error)
                 console.log(res.namespace)
-            }).then(() => {
-                //load arenas from local storage (development only)
-                const arenas = require('./assets/arenas')
-                loadArenas(arenas)
             })
+
+            //load arenas from local storage (development only)
+            const arenas = require('./assets/arenas')
+            await loadArenas(arenas)
+            
             await db.createCollection('matches', (error, res) => {
                 if (error) reject(error)
                 console.log(res.namespace)
             })
             await db.createCollection('season_schedules', (error, res) => {
+                if (error) reject(error)
+                console.log(res.namespace)
+            })
+            await db.createCollection('messages', (error, res) => {
                 if (error) reject(error)
                 console.log(res.namespace)
             })
@@ -155,6 +165,20 @@ const getUser = ({user_id, email}) => {
             }
         } catch(error) {
             reject(error)
+        }
+    })
+}
+
+const getAllUsers = () => {
+    return new Promise(async(resolve, reject) => {
+        try {
+            if (!db) await mongoStart()
+            await db.collection('users').find({}).toArray((err, result) => {
+                if (err) reject(err)
+                resolve(result)
+            })
+        } catch (err) {
+            reject(err)
         }
     })
 }
@@ -262,10 +286,8 @@ const createTeam = ({league_id, team_name, phone_number, email, captain_id, play
                 if(err) reject(err)
                 resolve(res.ops)
             })
-        } catch(error) {
-            if (error) {
-                reject(error)
-            }
+        } catch(err) {
+            reject(err)
         }
     })
 }
@@ -293,8 +315,22 @@ const getArena = ({arena_id, email}) => {
                 throw new Error("Please specify either valid ID or email.")
             }
     
-        } catch(error) {
-            reject(error)
+        } catch(err) {
+            reject(err)
+        }
+    })
+}
+
+const getAllArenas = () => {
+    return new Promise(async(resolve, reject) => {
+        try {
+            if (!db) await mongoStart()
+            await db.collection('arenas').find({}).toArray((err, result) => {
+                if (err) reject(err)
+                resolve(result)
+            })
+        } catch (err) {
+            reject(err)
         }
     })
 }
@@ -307,10 +343,8 @@ const createArena = ({email, phone_number, latitude, longitude, thumbnail_link, 
                 if(err) reject(err)
                 resolve(res.ops)
             })
-        } catch(error) {
-            if (error) {
-                reject(error)
-            }
+        } catch(err) {
+            reject(err)
         }
     })
 }
@@ -330,9 +364,8 @@ const getMatch = ({match_id}) => {
             } else {
                 throw new Error(`Please specify valid match_id. It was ${match_id}.`)
             }
-    
-        } catch(error) {
-            reject(error)
+        } catch(err) {
+            reject(err)
         }
     })
 }
@@ -345,10 +378,8 @@ const createMatch = ({season_id, home_id, away_id, start_time, end_time, arena_i
                 if(err) reject(err)
                 resolve(res.ops)
             })
-        } catch(error) {
-            if (error) {
-                reject(error)
-            }
+        } catch(err) {
+            reject(err)
         }
     })
 }
@@ -366,12 +397,12 @@ const updateMatch = ({match_id, updates}) => {
             } else {
                 throw new Error(`Please specify valid match_id. It was ${match_id}. Ensure updates are passed through as nested object, updates was ${updates}.`)
             }
-    
-        } catch(error) {
-            reject(error)
+        } catch(err) {
+            reject(err)
         }
     })
 }
+
 const getSeasonSchedule = ({season_schedule_id}) => {
     return new Promise (async (resolve, reject) => {
         try {
@@ -388,8 +419,8 @@ const getSeasonSchedule = ({season_schedule_id}) => {
                 throw new Error(`Please specify valid season_schedule_id. It was ${season_schedule_id}.`)
             }
     
-        } catch(error) {
-            reject(error)
+        } catch(err) {
+            reject(err)
         }
     })
 }
@@ -402,10 +433,43 @@ const createSeasonSchedule = ({league_id, matches, season_start, season_end, sea
                 if(err) reject(err)
                 resolve(res.ops)
             })
-        } catch(error) {
-            if (error) {
-                reject(error)
+        } catch(err) {
+            reject(err)
+        }
+    })
+}
+
+const getMessage = ({message_id}) => {
+    return new Promise (async (resolve, reject) => {
+        try {
+            if (!db) await mongoStart()
+
+            if (message_id) {
+                await db.collection('messages').findOne({_id: ObjectID(message_id)}, (err, doc) => {
+                    if(err) {
+                        reject(err)
+                    }
+                    resolve(doc)
+                })
+            } else {
+                throw new Error(`Please specify valid message_id. It was ${message_id}.`)
             }
+        } catch(err) {
+            reject(err)
+        }
+    })
+}
+
+const createMessage = ({sender_id, receivers, message, thumbnail_link}) => {
+    return new Promise(async (resolve, reject) => {
+        try {            
+            if (!db) await mongoStart()
+            await db.collection('messages').insertOne({sender_id, receivers, message, thumbnail_link}, (err, res) => {
+                if(err) reject(err)
+                resolve(res.ops)
+            })
+        } catch(err) {
+                reject(err)
         }
     })
 }
@@ -415,16 +479,20 @@ module.exports = {
     mongoClose,
     resetDatabase,
     getUser,
+    getAllUsers,
     createUser,
     getLeague,
     createLeague,
     getTeam,
     createTeam,
     getArena,
+    getAllArenas,
     createArena,
     getMatch,
     createMatch,
     updateMatch,
     getSeasonSchedule,
     createSeasonSchedule,
+    getMessage,
+    createMessage,
 }

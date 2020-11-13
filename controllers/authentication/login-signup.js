@@ -20,18 +20,18 @@ const signUpUser = ({first_name, last_name, birth_date, phone_number, email, pas
             if (age < MINIMUM_AGE_REQUIREMENT) {
                 reject(new Error(`ERROR: Minimum age is ${MINIMUM_AGE_REQUIREMENT}. Sorry!`))
             } else {
-                // emailAlreadyExist(email)
-                // .then(() => {
-                //     return hash(password)
-                // })
-                hash(password)
+                emailAlreadyExist(email)
+                .then(() => {
+                    return hash(password)
+                })
+                // hash(password)
                 .then(async (hashedPassword) => {
                     try {
                         const newUser = {first_name: first_name, last_name: last_name, birth_date: birth_date, phone_number: phone_number, email: email, password_hash: hashedPassword, leagues: [], messages: []}
-                        await db.createUser(newUser) //implement
-                        delete newUser.password_hash
-
-                        resolve(newUser)
+                        await db.createUser(newUser) //for some reason, can't modify the return result, delete won't work, can't call the properties???
+                        const user = await db.getUser({email: email})
+                        delete user.password_hash
+                        resolve(user)
                     } catch (error) {
                         //problem creating user
                         reject(error)
@@ -101,13 +101,15 @@ const emailAlreadyExist = (email) => {
         try {
             const emailMatch = await db.getUser({email: email})
 
+            console.log(emailMatch)
+
             if (emailMatch != null) {
                 reject (new Error('Email already taken.'))
             } else {
                 resolve('Email good to use.')
             }
-        } catch(error) {
-            reject(error)
+        } catch(err) {
+            reject(err)
         }
     })
 }
