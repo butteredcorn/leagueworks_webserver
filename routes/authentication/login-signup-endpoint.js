@@ -31,7 +31,7 @@ router.post('/login', async (req, res) => {
 
                 // console.log(user)
                 const accessToken = await createNewToken({...user})
-                return {'access_token': accessToken, 'expiry': token_expiry}
+                return {'_id': user._id, 'access_token': accessToken, 'expiry': token_expiry}
             })
             .then((token) => {
                 res.send(token)
@@ -40,7 +40,7 @@ router.post('/login', async (req, res) => {
             throw new Error("Ensure request is sent in req.body.")
         } 
     } catch (err) {
-        res.send(err.message)
+        res.send({error: err.message})
     }
 
 })
@@ -54,14 +54,13 @@ router.post('/signup', async (req, res) => {
             await signUpUser({first_name: req.body.user.first_name, last_name: req.body.user.last_name, birth_date: req.body.user.birth_date, phone_number: req.body.user.phone_number, email: req.body.user.email, password: req.body.user.password})
             .then(async (user) => {
                 //move this logic to json-web-token.js
-                delete user.password_hash
+
                 const today = new Date();
                 const token_expiry = today.addDays(access_token_expiry_in_days)
                 user.token_expiry = token_expiry //need to refresh token expiry for logged-in activity
 
-                // console.log(user)
                 const accessToken = await createNewToken({...user})
-                return {'access_token': accessToken, 'expiry': token_expiry}
+                return {'_id': user._id, 'access_token': accessToken, 'expiry': token_expiry}
             })
             .then((token) => {
                 res.send(token)
@@ -70,7 +69,7 @@ router.post('/signup', async (req, res) => {
             throw new Error("Ensure request is sent in req.body.")
         }
     } catch (err) {
-        res.send(err.message)
+        res.send({error: err.message})
     }
 })
 

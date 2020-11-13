@@ -75,6 +75,17 @@ router.post('/read/user', protectedPostRoute, async (req, res) => {
     
 })
 
+router.post('/read/users', protectedPostRoute, async (req, res) => {
+    try {
+        const result = await db.getAllUsers()
+        if (logging) console.log(result)
+        res.send(result)
+        
+    } catch (err) {
+        if(logging) console.log(err.message)
+        res.send({error: err.message})
+    }
+})
 
 // fetch('/', {
 //     method: 'POST',
@@ -89,6 +100,7 @@ router.post('/read/user', protectedPostRoute, async (req, res) => {
 //     })
 // });
 
+//for signups, refer to /auth/signup
 router.post('/create/user', protectedPostRoute, async (req, res) => {
     try {
 
@@ -203,6 +215,18 @@ router.post('/read/arena', protectedPostRoute, async (req, res) => {
     }
 })
 
+router.post('/read/arenas', protectedPostRoute, async (req, res) => {
+    try {
+        const result = await db.getAllArenas()
+        if (logging) console.log(result)
+        res.send(result)
+        
+    } catch (err) {
+        if(logging) console.log(err.message)
+        res.send({error: err.message})
+    }
+})
+
 //implement
 router.post('/create/arena', protectedPostRoute, async (req, res) => {
     try {
@@ -306,6 +330,43 @@ router.post('/create/schedule', protectedPostRoute, async (req, res) => {
                 season_start: req.body.season_schedule.season_start,
                 season_end: req.body.season_schedule.season_end,
                 season_arenas: req.body.season_schedule.season_arenas
+            })
+
+            if (logging) console.log(result)
+            res.send(result)
+        }
+    } catch (err) {
+        if(logging) console.log(err.message)
+        res.send({error: err.message})
+    }
+})
+
+router.post('/read/message', protectedPostRoute, async (req, res) => {
+    try {
+        if (!req.body.message) throw new Error(`No message object found. req.body.message was ${req.body.message}`)
+
+        if (req.body && req.body.message) {
+            const result = await db.getMessage({message_id: req.body.message.message_id})
+            if (logging) console.log(result)
+            res.send(result)
+        }
+    } catch (err) {
+        if(logging) console.log(err.message)
+        res.send({error: err.message})
+    }
+})
+
+router.post('/create/message', protectedPostRoute, async (req, res) => {
+    try {
+        if (!req.body.message) throw new Error(`No message object found. req.body.message was ${req.body.message}`)
+
+        if(req.body && req.body.message) {
+            
+            const result = await db.createMessage({
+                sender_id: req.body.message.sender_id,
+                receivers: req.body.message.receivers, //array of receiver_id s
+                message: req.body.message.message, //text
+                thumbnail_link: req.body.message.thumbnail_link
             })
 
             if (logging) console.log(result)
