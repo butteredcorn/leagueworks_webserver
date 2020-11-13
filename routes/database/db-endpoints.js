@@ -14,7 +14,7 @@ router.get('/*', async (req, res) => {
         throw new Error("Welcome to the RESTful database API. Please ensure you are logged in and send post requests.")
     } catch (err) {
         if(logging) console.log(err.message)
-        res.send(err.message)
+        res.send({error: err.message})
     }
 })
 
@@ -26,7 +26,7 @@ router.post('/open', protectedPostRoute, async (req, res) => {
         res.send('database connection opened')
     } catch (err) {
         if(logging) console.log(err.message)
-        res.send(err.message)
+        res.send({error: err.message})
     }
 })
 
@@ -36,7 +36,7 @@ router.post('/close', protectedPostRoute, async (req, res) => {
         res.send('database connection closed')
     } catch (err) {
         if(logging) console.log(err.message)
-        res.send(err.message)
+        res.send({error: err.message})
     }
 })
 
@@ -49,7 +49,7 @@ router.post('/reset', protectedPostRoute, async (req, res) => {
         res.send(result)
     } catch (err) {
         if(logging) console.log(err.message)
-        res.send(err.message)
+        res.send({error: err.message})
     }
     
 })
@@ -70,7 +70,7 @@ router.post('/read/user', protectedPostRoute, async (req, res) => {
 
     } catch (err) {
         if(logging) console.log(err.message)
-        res.send(err.message)
+        res.send({error: err.message})
     }
     
 })
@@ -102,15 +102,15 @@ router.post('/create/user', protectedPostRoute, async (req, res) => {
                 phone_number: req.body.user.phone_number,
                 email: req.body.user.email,
                 password_hash: req.body.user.password_hash,
-                leagues: req.body.user.leagues,
-                messages: []
+                // leagues: req.body.user.leagues, //add these later, they will be set to empty arrays by default
+                // messages: []
             })
             if (logging) console.log(result)
             res.send(result)
         }
     } catch (err) {
         if(logging) console.log(err.message)
-        res.send(err.message)
+        res.send({error: err.message})
     }
 })
 
@@ -125,7 +125,7 @@ router.post('/read/league', protectedPostRoute, async (req, res) => {
         }
     } catch (err) {
         if(logging) console.log(err.message)
-        res.send(err.message)
+        res.send({error: err.message})
     }
 })
 
@@ -146,7 +146,7 @@ router.post('/create/league', protectedPostRoute, async (req, res) => {
         }
     } catch (err) {
         if(logging) console.log(err.message)
-        res.send(err.message)
+        res.send({error: err.message})
     }
 })
 
@@ -162,7 +162,7 @@ router.post('/read/team', protectedPostRoute, async (req, res) => {
         }
     } catch (err) {
         if(logging) console.log(err.message)
-        res.send(err.message)
+        res.send({error: err.message})
     }
 })
 
@@ -184,7 +184,7 @@ router.post('/create/team', protectedPostRoute, async (req, res) => {
         }
     } catch (err) {
         if(logging) console.log(err.message)
-        res.send(err.message)
+        res.send({error: err.message})
     }
 })
 
@@ -199,7 +199,7 @@ router.post('/read/arena', protectedPostRoute, async (req, res) => {
         }
     } catch (err) {
         if(logging) console.log(err.message)
-        res.send(err.message)
+        res.send({error: err.message})
     }
 })
 
@@ -220,7 +220,7 @@ router.post('/create/arena', protectedPostRoute, async (req, res) => {
         }
     } catch (err) {
         if(logging) console.log(err.message)
-        res.send(err.message)
+        res.send({error: err.message})
     }
 })
 
@@ -235,7 +235,7 @@ router.post('/read/match', protectedPostRoute, async (req, res) => {
         }
     } catch (err) {
         if(logging) console.log(err.message)
-        res.send(err.message)
+        res.send({error: err.message})
     }
 })
 
@@ -260,7 +260,60 @@ router.post('/create/match', protectedPostRoute, async (req, res) => {
         }
     } catch (err) {
         if(logging) console.log(err.message)
-        res.send(err.message)
+        res.send({error: err.message})
+    }
+})
+
+router.post('/update/match', protectedPostRoute, async (req, res) => {
+    try {
+        if (!req.body.match) throw new Error(`No match object found. req.body.match was ${req.body.match}`)
+
+        if (req.body && req.body.match) {
+            const result = await db.updateMatch({match_id: req.body.match.match_id, updates: req.body.match.updates})
+            if (logging) console.log(result)
+            res.send(result)
+        }
+    } catch (err) {
+        if(logging) console.log(err.message)
+        res.send({error: err.message})
+    }
+})
+
+router.post('/read/schedule', protectedPostRoute, async (req, res) => {
+    try {
+        if (!req.body.season_schedule) throw new Error(`No schedule object found. req.body.season_schedule was ${req.body.season_schedule}`)
+
+        if (req.body && req.body.season_schedule) {
+            const result = await db.getSeasonSchedule({season_schedule_id: req.body.season_schedule.season_schedule_id})
+            if (logging) console.log(result)
+            res.send(result)
+        }
+    } catch (err) {
+        if(logging) console.log(err.message)
+        res.send({error: err.message})
+    }
+})
+
+router.post('/create/schedule', protectedPostRoute, async (req, res) => {
+    try {
+        if (!req.body.season_schedule) throw new Error(`No schedule object found. req.body.season_schedule was ${req.body.season_schedule}`)
+
+        if(req.body && req.body.season_schedule) {
+            
+            const result = await db.createSeasonSchedule({
+                league_id: req.body.season_schedule.league_id,
+                matches: req.body.season_schedule.matches,
+                season_start: req.body.season_schedule.season_start,
+                season_end: req.body.season_schedule.season_end,
+                season_arenas: req.body.season_schedule.season_arenas
+            })
+
+            if (logging) console.log(result)
+            res.send(result)
+        }
+    } catch (err) {
+        if(logging) console.log(err.message)
+        res.send({error: err.message})
     }
 })
 

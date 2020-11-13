@@ -9,6 +9,17 @@ const client = new MongoClient(uri, { useNewUrlParser: true });
 
 let db;
 
+const formatUpdates = (updates) => {
+    const formattedUpdates = Object.keys(updates).reduce((accumulator, key) => {
+        if (typeof updates[key] === "undefined" || updates[key] == null ) return accumulator;
+        accumulator[key] = updates[key];
+        return accumulator;
+      }, {});
+    return formattedUpdates;
+}
+
+  
+
 function mongoStart() {
     return new Promise(async (resolve, reject) => {
         try {
@@ -65,10 +76,19 @@ const resetDatabase =  () => {
                 if (error) reject(error)
                 console.log(res)
             })
+            await db.collection('season_schedules').drop((error, res) => {
+                if (error) reject(error)
+                console.log(res)
+            })
+            await db.collection('matches').drop((error, res) => {
+                if (error) reject(error)
+                console.log(res)
+            })
             await db.collection('arenas').drop((error, res) => {
                 if (error) reject(error)
                 console.log(res)
             })
+            
 
 
             //re-initialize tables
@@ -79,6 +99,14 @@ const resetDatabase =  () => {
                 //load arenas from local storage (development only)
                 const arenas = require('./assets/arenas')
                 loadArenas(arenas)
+            })
+            await db.createCollection('matches', (error, res) => {
+                if (error) reject(error)
+                console.log(res.namespace)
+            })
+            await db.createCollection('season_schedules', (error, res) => {
+                if (error) reject(error)
+                console.log(res.namespace)
             })
             await db.createCollection('teams', (error, res) => {
                 if (error) reject(error)
@@ -99,6 +127,7 @@ const resetDatabase =  () => {
         }
     })
 }
+
 
 const getUser = ({user_id, email}) => {
     return new Promise (async (resolve, reject) => {
@@ -308,11 +337,71 @@ const getMatch = ({match_id}) => {
     })
 }
 
-const createMatch = ({season_id, home_id, away_id, start_time, end_time, arena_id}) => {
+const createMatch = ({season_id, home_id, away_id, start_time, end_time, arena_id, winner_id, loser_id}) => {
     return new Promise(async (resolve, reject) => {
         try {            
             if (!db) await mongoStart()
-            await db.collection('matches').insertOne({season_id, home_id, away_id, start_time, end_time, arena_id}, (err, res) => {
+            await db.collection('matches').insertOne({season_id, home_id, away_id, start_time, end_time, arena_id, winner_id, loser_id}, (err, res) => {
+                if(err) reject(err)
+                resolve(res.ops)
+            })
+        } catch(error) {
+            if (error) {
+                reject(error)
+            }
+        }
+    })
+}
+
+const updateMatch = ({match_id, updates}) => {
+    return new Promise (async (resolve, reject) => {
+        try {
+            if (!db) await mongoStart()
+
+            if (match_id && updates) {
+
+                const formattedUpdates = formatUpdates(updates)
+
+                await db.collection('matches').findOneAndUpdate({_id: ObjectID(match_id)}, {$set: formattedUpdates}, {returnNewDocument: true}, (err, result) => {
+                    if(err) reject(err)
+                    resolve(result.value)
+                })
+            } else {
+                throw new Error(`Please specify valid match_id. It was ${match_id}. Ensure updates are passed through as nested object, updates was ${updates}.`)
+            }
+    
+        } catch(error) {
+            reject(error)
+        }
+    })
+}
+const getSeasonSchedule = ({season_schedule_id}) => {
+    return new Promise (async (resolve, reject) => {
+        try {
+            if (!db) await mongoStart()
+
+            if (season_schedule_id) {
+                await db.collection('season_schedules').findOne({_id: ObjectID(season_schedule_id)}, (err, doc) => {
+                    if(err) {
+                        reject(err)
+                    }
+                    resolve(doc)
+                })
+            } else {
+                throw new Error(`Please specify valid season_schedule_id. It was ${season_schedule_id}.`)
+            }
+    
+        } catch(error) {
+            reject(error)
+        }
+    })
+}
+
+const createSeasonSchedule = ({league_id, matches, season_start, season_end, season_arenas}) => {
+    return new Promise(async (resolve, reject) => {
+        try {            
+            if (!db) await mongoStart()
+            await db.collection('season_schedules').insertOne({league_id, matches, season_start, season_end, season_arenas}, (err, res) => {
                 if(err) reject(err)
                 resolve(res.ops)
             })
@@ -337,5 +426,8 @@ module.exports = {
     getArena,
     createArena,
     getMatch,
-    createMatch
+    createMatch,
+    updateMatch,
+    getSeasonSchedule,
+    createSeasonSchedule,
 }
