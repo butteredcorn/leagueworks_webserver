@@ -81,11 +81,11 @@ const loginUser = ({email, password}) => {
                     })
                     .catch((error) => {
                         console.log(error)
-                        reject(crypticUsernamePasswordError)
+                        reject(new Error(crypticUsernamePasswordError))
                     })
                 resolve(user)
             } else {
-                reject(crypticUsernamePasswordError)
+                reject(new Error(crypticUsernamePasswordError))
             }
         } catch(error) {
             //error with db.getUsers
