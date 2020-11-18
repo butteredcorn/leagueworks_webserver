@@ -36,6 +36,7 @@ router.post('/login', async (req, res) => {
             .then((token) => {
                 res.send(token)
             })
+            .catch((err) => res.send({error: err.message}))
         } else {
             throw new Error("Ensure request is sent in req.body.")
         } 
