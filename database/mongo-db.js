@@ -239,12 +239,39 @@ const addUserLeague = ({user_id, league_id}) => {
                     resolve(result.value)
                 })
 
-                
+
             } else {
                 throw new Error(`Please specify valid match_id. It was ${user_id}. Ensure updates are passed through as nested object, updates was ${updates}.`)
             }
         } catch(err) {
             reject(err)
+        }
+    })
+}
+
+const getUserLeagues = ({user_id}) => {
+    return new Promise (async (resolve, reject) => {
+        try {  
+            //console.log(db)
+            if (!db) await mongoStart()
+
+            if (user_id) {
+                await db.collection('users').findOne({_id: ObjectID(user_id)}, (err, user) => {
+                    if(err) reject(err)
+                    const query = user.leagues.map((league_id) => ObjectID(league_id))
+                    // for (let league_id of user.leagues) {
+                    //     query.push(ObjectID(league_id))
+                    // }
+                    db.collection('leagues').find({_id: {$in : query}}).toArray(function (err, userLeagues) {
+                        if(err) reject(err)
+                        resolve(userLeagues)
+                    })
+                })
+            } else {
+                throw new Error(`Required user_id or email. It was ${{user_id, email}}`)
+            }
+        } catch(error) {
+            reject(error)
         }
     })
 }
@@ -532,6 +559,7 @@ module.exports = {
     createUser,
     updateUser,
     addUserLeague,
+    getUserLeagues,
     getLeague,
     createLeague,
     getTeam,

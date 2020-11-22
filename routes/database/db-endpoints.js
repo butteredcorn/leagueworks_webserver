@@ -133,7 +133,7 @@ router.post('/add/userleague', protectedPostRoute, async (req, res) => {
         if(req.body && req.body.user) {
             const result = await db.addUserLeague({user_id: req.body.user.user_id, league_id: req.body.user.league_id})
             console.log(result)
-            
+
             if (logging) console.log(result)
             res.send(result)
         }
@@ -141,6 +141,26 @@ router.post('/add/userleague', protectedPostRoute, async (req, res) => {
         if(logging) console.log(err.message)
         res.send({error: err.message})
     }
+})
+
+router.post('/read/userleagues', protectedPostRoute, async (req, res) => {
+    try {
+        //the queried about user
+        if (!req.body.user) throw new Error(`No user object found. req.body.user was ${req.body.user}`)
+
+        //console.log(req.user) //the logged in user
+
+        if (req.body && req.body.user) {
+            const result = await db.getUserLeagues({user_id: req.body.user.user_id})
+            if (logging) console.log(result)
+            res.send(result)
+        }
+
+    } catch (err) {
+        if(logging) console.log(err.message)
+        res.send({error: err.message})
+    }
+    
 })
 
 router.post('/read/league', protectedPostRoute, async (req, res) => {
@@ -165,7 +185,7 @@ router.post('/create/league', protectedPostRoute, async (req, res) => {
 
         if(req.body && req.body.league) {
             const result = await db.createLeague({
-                league_name: req.body.league.name,
+                league_name: req.body.league.league_name,
                 phone_number: req.body.league.phone_number,
                 email: req.body.league.email,
                 sport_type: req.body.league.sport_type
