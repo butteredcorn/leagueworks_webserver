@@ -43,7 +43,6 @@ router.post('/close', protectedPostRoute, async (req, res) => {
 //check for administrator privileges
 router.post('/reset', protectedPostRoute, async (req, res) => {
     try {
-
         const result = await db.resetDatabase()
         if (logging) console.log(result)
         res.send(result)
@@ -127,6 +126,23 @@ router.post('/create/user', protectedPostRoute, async (req, res) => {
     }
 })
 
+router.post('/add/userleague', protectedPostRoute, async (req, res) => {
+    try {
+        if (!req.body.user) throw new Error(`No user object found. req.body.user was ${req.body.user}`)
+
+        if(req.body && req.body.user) {
+            const result = await db.addUserLeague({user_id: req.body.user.user_id, league_id: req.body.user.league_id})
+            console.log(result)
+            
+            if (logging) console.log(result)
+            res.send(result)
+        }
+    } catch (err) {
+        if(logging) console.log(err.message)
+        res.send({error: err.message})
+    }
+})
+
 router.post('/read/league', protectedPostRoute, async (req, res) => {
     try {
         if (!req.body.league) throw new Error(`No league object found. req.body.league was ${req.body.league}`)
@@ -154,6 +170,10 @@ router.post('/create/league', protectedPostRoute, async (req, res) => {
                 email: req.body.league.email,
                 sport_type: req.body.league.sport_type
             })
+
+            //and automatically join the league!!
+
+
             if (logging) console.log(result)
             res.send(result)
         }

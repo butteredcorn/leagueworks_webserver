@@ -131,7 +131,8 @@ const resetDatabase =  () => {
                 console.log(res.namespace)
             })
             
-            resolve(result)
+            console.log("database reset")
+            resolve("database reset")
         } catch (error) {
             reject(error)
         }
@@ -200,7 +201,55 @@ const createUser = ({first_name, last_name, birth_date, phone_number, user_type,
     })
 }
 
+const updateUser = ({user_id, updates}) => {
+    return new Promise (async (resolve, reject) => {
+        try {
+            if (!db) await mongoStart()
+
+            if (user_id && updates) {
+                await db.collection('users').findOneAndUpdate({_id: ObjectID(user_id)}, {$set: formatUpdates(updates)}, {returnOriginal: false}, (err, result) => {
+                    if(err) reject(err)
+                    resolve(result.value)
+                })
+            } else {
+                throw new Error(`Please specify valid match_id. It was ${user_id}. Ensure updates are passed through as nested object, updates was ${updates}.`)
+            }
+        } catch(err) {
+            reject(err)
+        }
+    })
+}
+
 //create update function for user to join a league
+const addUserLeague = ({user_id, league_id}) => {
+    return new Promise (async (resolve, reject) => {
+        try {
+            if (!db) await mongoStart()
+
+            if (user_id && league_id) {
+
+                const user = await getUser({user_id})
+                //console.log(user)
+                const newLeagues = [...user.leagues, league_id]
+                //console.log(newLeagues)
+
+                //update user to have leagues
+                await db.collection('users').findOneAndUpdate({_id: ObjectID(user_id)}, {$set: {leagues: newLeagues}}, {returnOriginal: false}, (err, result) => {
+                    if(err) reject(err)
+                    resolve(result.value)
+                })
+
+                
+            } else {
+                throw new Error(`Please specify valid match_id. It was ${user_id}. Ensure updates are passed through as nested object, updates was ${updates}.`)
+            }
+        } catch(err) {
+            reject(err)
+        }
+    })
+}
+
+
 //create update function for appending a message to a user?
 
 const getLeague = ({league_id, email}) => {
@@ -481,6 +530,8 @@ module.exports = {
     getUser,
     getAllUsers,
     createUser,
+    updateUser,
+    addUserLeague,
     getLeague,
     createLeague,
     getTeam,
