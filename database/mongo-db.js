@@ -353,6 +353,20 @@ const getTeam = ({team_id, email}) => {
     })
 }
 
+const getTeamsByLeague = ({league_id}) => {
+    return new Promise(async(resolve, reject) => {
+        try {
+            if (!db) await mongoStart()
+            await db.collection('teams').find({league_id: league_id}).toArray((err, result) => {
+                if (err) reject(err)
+                resolve(result)
+            })
+        } catch (err) {
+            reject(err)
+        }
+    })
+}
+
 //initialize players to empty array?
 const createTeam = ({league_id, team_name, phone_number, email, captain_id, players}) => {
     return new Promise(async (resolve, reject) => {
@@ -563,6 +577,7 @@ module.exports = {
     getLeague,
     createLeague,
     getTeam,
+    getTeamsByLeague,
     createTeam,
     getArena,
     getAllArenas,

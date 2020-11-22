@@ -220,6 +220,21 @@ router.post('/read/team', protectedPostRoute, async (req, res) => {
     }
 })
 
+router.post('/read/leagueteams', protectedPostRoute, async (req, res) => {
+    try {
+        if (!req.body.league) throw new Error(`No league object found. req.body.league was ${req.body.league}`)
+
+        if (req.body && req.body.league) {
+            const result = await db.getTeamsByLeague({team_id: req.body.league.league_id})
+            if (logging) console.log(result)
+            res.send(result)
+        }
+    } catch (err) {
+        if(logging) console.log(err.message)
+        res.send({error: err.message})
+    }
+})
+
 router.post('/create/team', protectedPostRoute, async (req, res) => {
     try {
         //console.log(req.body)
