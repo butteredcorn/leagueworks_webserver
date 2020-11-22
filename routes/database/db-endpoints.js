@@ -255,6 +255,7 @@ router.post('/create/team', protectedPostRoute, async (req, res) => {
         if(req.body && req.body.team) {
             const result = await db.createTeam({
                 league_id: req.body.team.league_id,
+                team_name: req.body.team.team_name,
                 phone_number: req.body.team.phone_number,
                 email: req.body.team.email,
                 captain_id: req.body.team.captain_id,
