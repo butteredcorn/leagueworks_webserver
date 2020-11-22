@@ -114,6 +114,7 @@ router.post('/create/user', protectedPostRoute, async (req, res) => {
                 phone_number: req.body.user.phone_number,
                 email: req.body.user.email,
                 password_hash: req.body.user.password_hash,
+                user_type: req.body.user.user_type
                 // leagues: req.body.user.leagues, //add these later, they will be set to empty arrays by default
                 // messages: []
             })

@@ -183,12 +183,12 @@ const getAllUsers = () => {
     })
 }
 
-const createUser = ({first_name, last_name, birth_date, phone_number, email, password_hash, leagues, messages}) => {
+const createUser = ({first_name, last_name, birth_date, phone_number, user_type, email, password_hash, leagues, messages}) => {
     return new Promise(async (resolve, reject) => {
         try {
             if (!db) await mongoStart()
 
-            await db.collection('users').insertOne({first_name, last_name, birth_date, phone_number, email, password_hash, leagues, messages}, (err, res) => {
+            await db.collection('users').insertOne({first_name, last_name, birth_date, phone_number, user_type, email, password_hash, leagues, messages}, (err, res) => {
                 if (err) reject(err)
                 resolve(res.ops)
             })

@@ -31,7 +31,7 @@ router.post('/login', async (req, res) => {
 
                 // console.log(user)
                 const accessToken = await createNewToken({...user})
-                return {'_id': user._id, 'access_token': accessToken, 'expiry': token_expiry}
+                return {'_id': user._id, 'access_token': accessToken, 'expiry': token_expiry, 'user_type': user.user_type}
             })
             .then((token) => {
                 res.send(token)
@@ -52,7 +52,7 @@ router.post('/signup', async (req, res) => {
         if (!req.body.user) throw new Error(`No user object found. req.body.user was ${req.body.user}`)
 
         if (req.body && req.body.user) {
-            await signUpUser({first_name: req.body.user.first_name, last_name: req.body.user.last_name, birth_date: req.body.user.birth_date, phone_number: req.body.user.phone_number, email: req.body.user.email, password: req.body.user.password})
+            await signUpUser({first_name: req.body.user.first_name, last_name: req.body.user.last_name, birth_date: req.body.user.birth_date, phone_number: req.body.user.phone_number, user_type: req.body.user.user_type, email: req.body.user.email, password: req.body.user.password})
             .then(async (user) => {
                 //move this logic to json-web-token.js
 
@@ -61,7 +61,7 @@ router.post('/signup', async (req, res) => {
                 user.token_expiry = token_expiry //need to refresh token expiry for logged-in activity
 
                 const accessToken = await createNewToken({...user})
-                return {'_id': user._id, 'access_token': accessToken, 'expiry': token_expiry}
+                return {'_id': user._id, 'access_token': accessToken, 'expiry': token_expiry, 'user_type': user.user_type}
             })
             .then((token) => {
                 res.send(token)
