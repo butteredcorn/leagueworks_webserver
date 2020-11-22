@@ -188,7 +188,8 @@ router.post('/create/league', protectedPostRoute, async (req, res) => {
                 league_name: req.body.league.league_name,
                 phone_number: req.body.league.phone_number,
                 email: req.body.league.email,
-                sport_type: req.body.league.sport_type
+                sport_type: req.body.league.sport_type,
+                headline: req.body.league.headline
             })
 
             //and automatically join the league!!

@@ -308,11 +308,11 @@ const getLeague = ({league_id, email}) => {
     })
 }
 
-const createLeague = ({league_name, phone_number, email, sport_type}) => {
+const createLeague = ({league_name, phone_number, email, sport_type, headline}) => {
     return new Promise(async (resolve, reject) => {
         try {            
             if (!db) await mongoStart()
-            await db.collection('leagues').insertOne({league_name, phone_number, email, sport_type}, (err, res) => {
+            await db.collection('leagues').insertOne({league_name, phone_number, email, sport_type, headline}, (err, res) => {
                 if(err) reject(err)
                 resolve(res.ops)
             })
