@@ -481,6 +481,7 @@ router.post('/read/message', protectedPostRoute, async (req, res) => {
 router.post('/create/message', protectedPostRoute, async (req, res) => {
     try {
         if (!req.body.message) throw new Error(`No message object found. req.body.message was ${req.body.message}`)
+        if(!req.body.message.socket_key) throw new Error("Invalid socket_key")
 
         if(req.body && req.body.message) {
             
@@ -488,7 +489,8 @@ router.post('/create/message', protectedPostRoute, async (req, res) => {
                 sender_id: req.body.message.sender_id,
                 receivers: req.body.message.receivers, //array of receiver_id s
                 message: req.body.message.message, //text
-                thumbnail_link: req.body.message.thumbnail_link
+                thumbnail_link: req.body.message.thumbnail_link,
+                socket_key: req.body.message.socket_key
             })
 
             if (logging) console.log(result)

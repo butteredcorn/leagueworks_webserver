@@ -597,11 +597,30 @@ const getMessage = ({message_id}) => {
     })
 }
 
-const createMessage = ({sender_id, receivers, message, thumbnail_link}) => {
+const getMessagesBySocketKey = ({socket_key}) => {
+    return new Promise (async (resolve, reject) => {
+        try {
+            if (!db) await mongoStart()
+
+            if (socket_key) {
+                await db.collection('messages').find({socket_key: socket_key}).toArray((err, result) => {
+                    if (err) reject(err)
+                    resolve(result)
+                })
+            } else {
+                throw new Error(`Please specify valid socket_key. It was ${socket_key}.`)
+            }
+        } catch(err) {
+            reject(err)
+        }
+    })
+}
+
+const createMessage = ({sender_id, receivers, message, thumbnail_link, socket_key}) => {
     return new Promise(async (resolve, reject) => {
         try {            
             if (!db) await mongoStart()
-            await db.collection('messages').insertOne({sender_id, receivers, message, thumbnail_link}, (err, res) => {
+            await db.collection('messages').insertOne({sender_id, receivers, message, thumbnail_link, socket_key}, (err, res) => {
                 if(err) reject(err)
                 resolve(res.ops)
             })
@@ -638,5 +657,6 @@ module.exports = {
     getSeasonSchedule,
     createSeasonSchedule,
     getMessage,
+    getMessagesBySocketKey,
     createMessage,
 }
