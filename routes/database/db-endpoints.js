@@ -302,6 +302,26 @@ router.post('/create/team', protectedPostRoute, async (req, res) => {
     }
 })
 
+router.post('/update/team', protectedPostRoute, async (req, res) => {
+    try {
+        //the queried about user
+        if (!req.body.team) throw new Error(`No team object found. req.body.team was ${req.body.team}`)
+
+        //console.log(req.user) //the logged in user
+
+        if (req.body && req.body.team) {
+            const result = await db.updateTeam({user_id: req.body.team.team_id, updates: req.body.user.updates})
+            if (logging) console.log(result)
+            res.send(user)
+        }
+
+    } catch (err) {
+        if(logging) console.log(err.message)
+        res.send({error: err.message})
+    }
+    
+})
+
 router.post('/read/arena', protectedPostRoute, async (req, res) => {
     try {
         if (!req.body.arena) throw new Error(`No arena object found. req.body.arena was ${req.body.arena}`)

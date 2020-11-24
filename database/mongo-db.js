@@ -410,6 +410,25 @@ const createTeam = ({league_id, team_name, phone_number, email, captain_id, play
     })
 }
 
+const updateTeam = ({team_id, updates}) => {
+    return new Promise (async (resolve, reject) => {
+        try {
+            if (!db) await mongoStart()
+
+            if (team_id && updates) {
+                await db.collection('teams').findOneAndUpdate({_id: ObjectID(team_id)}, {$set: formatUpdates(updates)}, {returnOriginal: false}, (err, result) => {
+                    if(err) reject(err)
+                    resolve(result.value)
+                })
+            } else {
+                throw new Error(`Please specify valid team_id. It was ${team_id}. Ensure updates are passed through as nested object, updates was ${updates}.`)
+            }
+        } catch(err) {
+            reject(err)
+        }
+    })
+}
+
 const getArena = ({arena_id, email}) => {
     return new Promise (async (resolve, reject) => {
         try {
@@ -609,6 +628,7 @@ module.exports = {
     getAllTeams,
     getTeamsByLeague,
     createTeam,
+    updateTeam,
     getArena,
     getAllArenas,
     createArena,
