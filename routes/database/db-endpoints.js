@@ -70,6 +70,26 @@ router.post('/read/user', protectedPostRoute, async (req, res) => {
     } catch (err) {
         if(logging) console.log(err.message)
         res.send({error: err.message})
+    }  
+})
+
+router.post('/update/user', protectedPostRoute, async (req, res) => {
+    try {
+        //the queried about user
+        if (!req.body.user) throw new Error(`No user object found. req.body.user was ${req.body.user}`)
+
+        //console.log(req.user) //the logged in user
+
+        if (req.body && req.body.user) {
+            const user = await db.updateUser({user_id: req.body.user.user_id, updates: req.body.user.updates})
+            delete user.password_hash
+            if (logging) console.log({queried_user: user, authenticated_user: req.user})
+            res.send(user)
+        }
+
+    } catch (err) {
+        if(logging) console.log(err.message)
+        res.send({error: err.message})
     }
     
 })
