@@ -33,14 +33,14 @@ module.exports = function () {
         try {
             //console.log(socket.handshake.query)
             console.log(socket.handshake.query)
-            // if (socket.handshake.query && socket.handshake.query.token) {
-            //     console.log(socket.handshake.query)
-            //     //check for jwt token
-            //     // const jwt = (socket.handshake.query.token).replace('access_token=', '')
-            //     // const user = await verifyExistingToken(jwt)
-            // } else {
-            //     throw new Error(`socket.handshake.query error. socket.handshake.query.token was ${socket.handshake.query.token}`)
-            // }
+            if (socket.handshake.query && socket.handshake.query.token) {
+                //check for jwt token
+                const jwt = socket.handshake.query.token
+                const user = await verifyExistingToken(jwt)
+                socket.user = user
+            } else {
+                throw new Error(`socket.handshake.query error. socket.handshake.query.token was ${socket.handshake.query.token}`)
+            }
             next()
         } catch (err) {
             console.log(err)
@@ -49,7 +49,7 @@ module.exports = function () {
 
     io.on('connection', (socket) => {
         console.log('a user connected');
-
+        console.log(socket.user)
         socket.emit("connection", "Hello from the server.")
 
         socket.on('react message', (message) => {
