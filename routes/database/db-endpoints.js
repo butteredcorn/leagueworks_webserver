@@ -310,7 +310,7 @@ router.post('/update/team', protectedPostRoute, async (req, res) => {
         //console.log(req.user) //the logged in user
 
         if (req.body && req.body.team) {
-            const result = await db.updateTeam({user_id: req.body.team.team_id, updates: req.body.user.updates})
+            const result = await db.updateTeam({team_id: req.body.team.team_id, updates: req.body.team.updates})
             if (logging) console.log(result)
             res.send(user)
         }
