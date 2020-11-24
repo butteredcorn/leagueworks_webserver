@@ -29,19 +29,34 @@ module.exports = function () {
 
 
     //io logic
-    io.use(async (socket, next) => {
-        try {
-            console.log(socket.handshake.query)
-            if (socket.handshake.query && socket.handshake.query.token) {
-                //check for jwt token
-                const jwt = (socket.handshake.query.token).replace('access_token=', '')
-                const user = await verifyExistingToken(jwt)
-            } else {
-                throw new Error(`socket.handshake.query error. socket.handshake.query.token was ${socket.handshake.query.token}`)
-            }
-        } catch (err) {
-            console.log(err)
-        }
+    // io.use(async (socket, next) => {
+    //     try {
+    //         console.log("socket connected")
+    //         //console.log(socket.handshake.query)
+    //         if (socket.handshake.query && socket.handshake.query.token) {
+    //             //check for jwt token
+    //             const jwt = (socket.handshake.query.token).replace('access_token=', '')
+    //             const user = await verifyExistingToken(jwt)
+    //         } else {
+    //             throw new Error(`socket.handshake.query error. socket.handshake.query.token was ${socket.handshake.query.token}`)
+    //         }
+    //     } catch (err) {
+    //         console.log(err)
+    //     }
+    // })
+
+    io.on("connection", (socket) => {
+        console.log("a user connected");
+
+        socket.emit("connection message", "hello from the server.")
+      });
+
+    io.on("message", (message) => {
+        console.log(message)
+    })
+
+    io.on("disconnect", (reason) => {
+        console.log(reason)
     })
 
     //remaining general server logic
