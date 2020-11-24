@@ -85,12 +85,15 @@ module.exports = function () {
             if(message) {
                 console.log(message)
                 const result = await db.createMessage({sender_id: message.sender_id, receivers: message.receivers, message: message.message, thumbnail_link: message.thumbnail_link, socket_key: socketKey})
+                io.sockets.in(socketKey).emit('new message', {sender_id: message.sender_id, receivers: message.receivers, message: message.message, thumbnail_link: message.thumbnail_link, socket_key: socketKey})
                 console.log(result)
             }
         })
 
         socket.on('disconnect', () => {
           console.log('user disconnected');
+          delete users[socket.user._id]
+          console.log(`Remaining online sockets: ${Object.keys(users)}.`)
         });
       });
 
