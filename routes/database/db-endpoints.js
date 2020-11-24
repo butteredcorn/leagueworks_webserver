@@ -312,7 +312,7 @@ router.post('/update/team', protectedPostRoute, async (req, res) => {
         if (req.body && req.body.team) {
             const result = await db.updateTeam({team_id: req.body.team.team_id, updates: req.body.team.updates})
             if (logging) console.log(result)
-            res.send(user)
+            res.send(result)
         }
 
     } catch (err) {
