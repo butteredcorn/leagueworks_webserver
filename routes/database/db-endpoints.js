@@ -165,10 +165,13 @@ router.post('/read/userleagues', protectedPostRoute, async (req, res) => {
 
 router.post('/read/league', protectedPostRoute, async (req, res) => {
     try {
-            const result = await db.getAllLeagues()
+        if (!req.body.league) throw new Error(`No league object found. req.body.league was ${req.body.league}`)
+
+        if (req.body && req.body.league) {
+            const result = await db.getLeague({league_id: req.body.league.league_id, email: req.body.league.email})
             if (logging) console.log(result)
             res.send(result)
-        
+        }
     } catch (err) {
         if(logging) console.log(err.message)
         res.send({error: err.message})
@@ -177,13 +180,10 @@ router.post('/read/league', protectedPostRoute, async (req, res) => {
 
 router.post('/read/leagues', protectedPostRoute, async (req, res) => {
     try {
-        if (!req.body.league) throw new Error(`No league object found. req.body.league was ${req.body.league}`)
-
-        if (req.body && req.body.league) {
-            const result = await db.getLeague({league_id: req.body.league.league_id, email: req.body.league.email})
+            const result = await db.getAllLeagues()
             if (logging) console.log(result)
             res.send(result)
-        }
+        
     } catch (err) {
         if(logging) console.log(err.message)
         res.send({error: err.message})
