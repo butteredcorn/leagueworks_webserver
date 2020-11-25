@@ -189,7 +189,8 @@ const createUser = ({first_name, last_name, birth_date, phone_number, user_type,
         try {
             if (!db) await mongoStart()
 
-            await db.collection('users').insertOne({first_name, last_name, birth_date, phone_number, user_type, email, password_hash, leagues, messages}, (err, res) => {
+            const timeStamp = Date.now()
+            await db.collection('users').insertOne({first_name, last_name, birth_date, phone_number, user_type, email, password_hash, leagues, messages, timeStamp}, (err, res) => {
                 if (err) reject(err)
                 resolve(res.ops)
             })
@@ -326,7 +327,8 @@ const createLeague = ({league_name, phone_number, email, sport_type, headline}) 
     return new Promise(async (resolve, reject) => {
         try {            
             if (!db) await mongoStart()
-            await db.collection('leagues').insertOne({league_name, phone_number, email, sport_type, headline}, (err, res) => {
+            const timeStamp = Date.now()
+            await db.collection('leagues').insertOne({league_name, phone_number, email, sport_type, headline, timeStamp}, (err, res) => {
                 if(err) reject(err)
                 resolve(res.ops)
             })
@@ -400,7 +402,8 @@ const createTeam = ({league_id, team_name, phone_number, email, captain_id, play
     return new Promise(async (resolve, reject) => {
         try {            
             if (!db) await mongoStart()
-            await db.collection('teams').insertOne({league_id, team_name, phone_number, email, captain_id, players}, (err, res) => {
+            const timeStamp = Date.now()
+            await db.collection('teams').insertOne({league_id, team_name, phone_number, email, captain_id, players, timeStamp}, (err, res) => {
                 if(err) reject(err)
                 resolve(res.ops)
             })
