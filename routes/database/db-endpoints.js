@@ -285,8 +285,7 @@ router.post('/read/teamsplayers', protectedPostRoute, async (req, res) => {
                 const playersArray = await db.getUsersFromTeam({players: teamsObj[key]})
                 teamsObj[key] = playersArray
             }
-            console.log(teamsObj)
-            if (logging) console.log(result)
+            if (logging) console.log(teamsObj)
             res.send(teamsObj)
         } else {
             throw new Error(`Ensure req.body.team.players is valid. It was ${req.body.team.players}.`)
