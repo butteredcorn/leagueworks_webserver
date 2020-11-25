@@ -4,6 +4,7 @@ const router = express.Router()
 
 //initialize db client
 //ip address must be whitelisted
+const ObjectID = require('mongodb').ObjectID;
 const db = require('../../database/mongo-db')
 //db.mongoStart()
 
@@ -266,7 +267,6 @@ router.post('/read/teams', protectedPostRoute, async (req, res) => {
 
 router.post('/read/teamsplayers', protectedPostRoute, async (req, res) => {
     try {
-        const ObjectID = require('mongodb').ObjectID;
 
         if (!req.body.teams) throw new Error(`No team object found. req.body.teams was ${req.body.teams}`)
 
@@ -281,9 +281,12 @@ router.post('/read/teamsplayers', protectedPostRoute, async (req, res) => {
                 teamsObj[team._id] = playersIDs
             }
 
-            console.log(teamsObj)
+            console.log(teamsObj) //{ '5fba0cf1ddbf920017904071': [ 5fb9b41bf474710017f1ffc8 ] }
             
             for (let key in teamsObj) {
+                
+                console.log({players: teamsObj[key]})
+
                 const playersArray = await db.getUsersFromTeam({players: teamsObj[key]})
                 teamsObj[key] = playersArray
             }
@@ -301,8 +304,6 @@ router.post('/read/teamsplayers', protectedPostRoute, async (req, res) => {
 
 router.post('/read/teamplayers', protectedPostRoute, async (req, res) => {
     try {
-        const ObjectID = require('mongodb').ObjectID;
-
         if (!req.body.team) throw new Error(`No team object found. req.body.team was ${req.body.team}`)
 
         if (req.body && req.body.team && req.body.team.players) {
