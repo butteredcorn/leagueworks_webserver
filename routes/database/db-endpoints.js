@@ -264,6 +264,28 @@ router.post('/read/teams', protectedPostRoute, async (req, res) => {
     }
 })
 
+router.post('/read/teamplayers', protectedPostRoute, async (req, res) => {
+    try {
+        if (!req.body.team) throw new Error(`No team object found. req.body.team was ${req.body.team}`)
+
+        if (req.body && req.body.team && req.body.team.players) {
+            const playerIDsArray =[]
+            for (let player in req.body.team.players) {
+                playerIDsArray.push(player.user_id)
+            }
+            const result = await db.getUsersFromTeam(playerIDsArray)
+            if (logging) console.log(result)
+            res.send(result)
+        } else {
+            throw new Error(`Ensure req.body.team.players is valid. It was ${req.body.team.players}.`)
+        }
+        
+    } catch (err) {
+        if(logging) console.log(err.message)
+        res.send({error: err.message})
+    }
+})
+
 router.post('/read/leagueteams', protectedPostRoute, async (req, res) => {
     try {
         if (!req.body.league) throw new Error(`No league object found. req.body.league was ${req.body.league}`)

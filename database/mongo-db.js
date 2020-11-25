@@ -170,6 +170,26 @@ const getUser = ({user_id, email}) => {
     })
 }
 
+//takes an array of IDs [player_id] -> need to parse team players
+const getUsersFromTeam = ({players}) => {
+    return new Promise(async(resolve, reject) => {
+        try {
+            //cast objectID
+            const formattedPlayers = []
+            for (let player of players) {
+                formattedPlayers.push(ObjectID(player))
+            }
+            if (!db) await mongoStart()
+            await db.collection('users').find({_id: formattedPlayers}).toArray((err, result) => {
+                if (err) reject(err)
+                resolve(result)
+            })
+        } catch (err) {
+            reject(err)
+        }
+    })
+}
+
 const getAllUsers = () => {
     return new Promise(async(resolve, reject) => {
         try {
@@ -660,6 +680,7 @@ module.exports = {
     mongoClose,
     resetDatabase,
     getUser,
+    getUsersFromTeam,
     getAllUsers,
     createUser,
     updateUser,
