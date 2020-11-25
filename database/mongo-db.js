@@ -1,3 +1,5 @@
+const { delete } = require('../routes/api');
+
 const MongoClient = require('mongodb').MongoClient;
 const ObjectID = require('mongodb').ObjectID;
 const uri = process.env.MONGO_DB_URI;
@@ -178,6 +180,9 @@ const getUsersFromTeam = ({players}) => {
             if (!db) await mongoStart()
             await db.collection('users').find({_id: {$in: players}}).toArray((err, result) => {
                 if (err) reject(err)
+                for (let user of result) {
+                    delete user.password_hash
+                }
                 resolve(result)
             })
         } catch (err) {
