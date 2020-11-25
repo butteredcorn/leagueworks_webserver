@@ -597,6 +597,27 @@ const getMessage = ({message_id}) => {
     })
 }
 
+const getUserMessages = ({user_id}) => {
+    return new Promise (async (resolve, reject) => {
+        try {
+            if (!db) await mongoStart()
+
+            if (user_id) {
+                await db.collection('messages').findOne({$or: [{sender_id: user_id},{receivers: user_id}]}, (err, doc) => {
+                    if(err) {
+                        reject(err)
+                    }
+                    resolve(doc)
+                })
+            } else {
+                throw new Error(`Please specify valid user_id. It was ${user_id}.`)
+            }
+        } catch(err) {
+            reject(err)
+        }
+    })
+}
+
 const getMessagesBySocketKey = ({socket_key}) => {
     return new Promise (async (resolve, reject) => {
         try {
@@ -657,6 +678,7 @@ module.exports = {
     getSeasonSchedule,
     createSeasonSchedule,
     getMessage,
+    getUserMessages,
     getMessagesBySocketKey,
     createMessage,
 }

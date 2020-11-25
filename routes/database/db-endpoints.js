@@ -478,6 +478,21 @@ router.post('/read/message', protectedPostRoute, async (req, res) => {
     }
 })
 
+router.post('/read/userMessages', protectedPostRoute, async (req, res) => {
+    try {
+        if (!req.body.user) throw new Error(`No message object found. req.body.user was ${req.body.user}`)
+
+        if (req.body && req.body.user) {
+            const result = await db.getUserMessages({user_id: req.body.user.user_id})
+            if (logging) console.log(result)
+            res.send(result)
+        }
+    } catch (err) {
+        if(logging) console.log(err.message)
+        res.send({error: err.message})
+    }
+})
+
 router.post('/create/message', protectedPostRoute, async (req, res) => {
     try {
         if (!req.body.message) throw new Error(`No message object found. req.body.message was ${req.body.message}`)
