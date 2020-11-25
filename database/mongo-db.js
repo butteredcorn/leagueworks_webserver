@@ -176,7 +176,7 @@ const getUsersFromTeam = ({players}) => {
         try {
             //ensure players already casted to objectID
             if (!db) await mongoStart()
-            await db.collection('users').find({_id: players}).toArray((err, result) => {
+            await db.collection('users').find({_id: {$in: players}}).toArray((err, result) => {
                 if (err) reject(err)
                 resolve(result)
             })
