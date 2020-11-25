@@ -264,14 +264,50 @@ router.post('/read/teams', protectedPostRoute, async (req, res) => {
     }
 })
 
+router.post('/read/teamsplayers', protectedPostRoute, async (req, res) => {
+    try {
+        const ObjectID = require('mongodb').ObjectID;
+
+        if (!req.body.teams) throw new Error(`No team object found. req.body.teams was ${req.body.teams}`)
+
+        if (req.body && req.body.teams) {
+            const teamsObj = {}
+
+            for (let team of req.body.teams.teams) {
+                const playersIDs = []
+                for (let player of team.players) {
+                    playersIDs.push(ObjectID(player.user_id))
+                }
+                teamsObj[team._id] = playersIDs
+            }
+            
+            for (let key in teamsObj) {
+                const playersArray = await db.getUsersFromTeam({players: teamsObj[key]})
+                teamsObj[key] = playersArray
+            }
+            console.log(teamsObj)
+            if (logging) console.log(result)
+            res.send(teamsObj)
+        } else {
+            throw new Error(`Ensure req.body.team.players is valid. It was ${req.body.team.players}.`)
+        }
+        
+    } catch (err) {
+        if(logging) console.log(err.message)
+        res.send({error: err.message})
+    }
+})
+
 router.post('/read/teamplayers', protectedPostRoute, async (req, res) => {
     try {
+        const ObjectID = require('mongodb').ObjectID;
+
         if (!req.body.team) throw new Error(`No team object found. req.body.team was ${req.body.team}`)
 
         if (req.body && req.body.team && req.body.team.players) {
             const playerIDsArray =[]
-            for (let player in req.body.team.players) {
-                playerIDsArray.push(player.user_id)
+            for (let player of req.body.team.players) {
+                playerIDsArray.push(ObjectID(player.user_id))
             }
             const result = await db.getUsersFromTeam(playerIDsArray)
             if (logging) console.log(result)
