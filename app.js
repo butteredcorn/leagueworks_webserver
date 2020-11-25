@@ -72,7 +72,7 @@ module.exports = function () {
         try { //to load old messages
             const messageHistory = await db.getMessagesBySocketKey({socket_key: socketKey})
             if (messageHistory.length == 0) { //no old messages
-                socket.emit('old messages', [{history: null}])
+                socket.emit('old messages', [{history: "no history"}])
             } else {
                 socket.emit('old messages', messageHistory)
             }
