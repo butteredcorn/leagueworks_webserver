@@ -603,7 +603,7 @@ const getUserMessages = ({user_id}) => {
             if (!db) await mongoStart()
 
             if (user_id) {
-                await db.collection('messages').findOne({$or: [{sender_id: user_id},{receivers: user_id}]}, (err, doc) => {
+                await db.collection('messages').find({$or: [{sender_id: user_id},{receivers: user_id}]}).toArray((err, doc) => {
                     if(err) {
                         reject(err)
                     }
