@@ -280,6 +280,8 @@ router.post('/read/teamsplayers', protectedPostRoute, async (req, res) => {
                 }
                 teamsObj[team._id] = playersIDs
             }
+
+            console.log(teamsObj)
             
             for (let key in teamsObj) {
                 const playersArray = await db.getUsersFromTeam({players: teamsObj[key]})
