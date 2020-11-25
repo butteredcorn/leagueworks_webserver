@@ -641,7 +641,8 @@ const createMessage = ({sender_id, receivers, message, thumbnail_link, socket_ke
     return new Promise(async (resolve, reject) => {
         try {            
             if (!db) await mongoStart()
-            await db.collection('messages').insertOne({sender_id, receivers, message, thumbnail_link, socket_key}, (err, res) => {
+            const timeStamp = Date.now()
+            await db.collection('messages').insertOne({sender_id, receivers, message, thumbnail_link, timeStamp, socket_key}, (err, res) => {
                 if(err) reject(err)
                 resolve(res.ops)
             })
