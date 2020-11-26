@@ -284,7 +284,7 @@ router.post('/read/teamsplayers', protectedPostRoute, async (req, res) => {
             console.log(teamsObj) //{ '5fba0cf1ddbf920017904071': [ 5fb9b41bf474710017f1ffc8 ] }
             
             for (let key in teamsObj) {
-                
+
                 console.log({players: teamsObj[key]})
 
                 const playersArray = await db.getUsersFromTeam({players: teamsObj[key]})
@@ -502,17 +502,34 @@ router.post('/read/schedule', protectedPostRoute, async (req, res) => {
 
 router.post('/create/schedule', protectedPostRoute, async (req, res) => {
     try {
-        if (!req.body.season_schedule) throw new Error(`No schedule object found. req.body.season_schedule was ${req.body.season_schedule}`)
+        if (!req.body.season) throw new Error(`No schedule object found. req.body.season was ${req.body.season}`)
 
-        if(req.body && req.body.season_schedule) {
+        //get league teams
+        //calculate season end date - provide optional override later
+        //need to think about season arenas
+        const checkGameDaysError = (match_days) => {
+            let error = true;
+            for (let day in match_days) {
+                if (match_days[day] === true) {
+                    error = false;
+                    break; //ensure at least one day has been selected
+                }
+            }
+            return error;
+        }
+
+        if(req.body && req.body.season && req.body.season.match_days) {
+            if(checkGameDaysError(req.body.season.match_days)) throw new Error(`At least one day in the week must be set to true. It was ${req.body.season.match_days}.`)
+            if(req.body.season.match_number == 0) throw new Error(`match_number cannot be zero.`)
             
-            const result = await db.createSeasonSchedule({
-                league_id: req.body.season_schedule.league_id,
-                matches: req.body.season_schedule.matches,
-                season_start: req.body.season_schedule.season_start,
-                season_end: req.body.season_schedule.season_end,
-                season_arenas: req.body.season_schedule.season_arenas
-            })
+            const {generateSeasonSchedule} = require('../../controllers/scheduling/create-schedule')
+
+            const result = await generateSeasonSchedule(req.body.season)
+            // const result = await db.createSeasonSchedule({
+                
+            // })
+
+            result ? result : {message: "work in progress"}
 
             if (logging) console.log(result)
             res.send(result)
