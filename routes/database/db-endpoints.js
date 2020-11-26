@@ -521,7 +521,8 @@ router.post('/create/schedule', protectedPostRoute, async (req, res) => {
         if(req.body && req.body.season && req.body.season.match_days) {
             if(checkGameDaysError(req.body.season.match_days)) throw new Error(`At least one day in the week must be set to true. It was ${req.body.season.match_days}.`)
             if(req.body.season.match_number == 0) throw new Error(`match_number cannot be zero.`)
-            
+            if(req.body.season.match_sets_per_week < 1) throw new Error(`match_sets_per_week cannot be less than 1.`)
+
             const {generateSeasonSchedule} = require('../../controllers/scheduling/create-schedule')
 
             const result = await generateSeasonSchedule(req.body.season)

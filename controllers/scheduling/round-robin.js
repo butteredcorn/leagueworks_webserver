@@ -1,9 +1,12 @@
 const dummyTeam = {
+    _id: "",
     league_id: null,
-    captain_name: '',
-    contact_number: '',
-    contact_email: '',
-    players: []
+    team_name: '',
+    phone_number: '',
+    email: '',
+    captain_id: "",
+    players: [],
+    timeStamp: ""
 }
 
 const match = (numTeams, teams) => { 
@@ -33,6 +36,37 @@ const match = (numTeams, teams) => {
     return matches;
   };
 
+  const formattedMatch = (numTeams, teams) => { 
+    const matches = [];                  
+    if (!teams) {
+      teams = [];
+      for (let i = 1; i <= numTeams; i += 1) {
+          teams.push(i);
+      }
+    } else {
+      teams = teams.slice();
+    }
+  
+    if (numTeams % 2 === 1) { //if odd
+      teams.push(dummyTeam); // add a dummy to make teams even
+      numTeams += 1;
+    }
+    for (let j = 0; j < numTeams - 1; j += 1) {
+      matches[j] = []; // create inner match array for round j
+      for (let i = 0; i < numTeams / 2; i += 1) {
+        if (JSON.stringify(teams[i]) !== JSON.stringify(dummyTeam) && JSON.stringify(teams[numTeams - 1 - i]) !== JSON.stringify(dummyTeam)) {
+          const home_team = Math.random() < 0.5;  //randomize homefield advantage
+          const teamOne = {team_id: teams[i]._id, home_team: home_team}
+          const teamTwo = {team_id: teams[numTeams - 1 - i]._id, home_team: !home_team}
+          matches[j].push([teamOne, teamTwo]); // insert pair as a match
+        }
+      }
+      teams.splice(1, 0, teams.pop()); // permutate for next round
+    }
+    return matches;
+  };
+
 module.exports = {
-    match
+    match,
+    formattedMatch
 }

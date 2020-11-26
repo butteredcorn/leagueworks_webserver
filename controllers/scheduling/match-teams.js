@@ -62,7 +62,7 @@ const teams = [
 const matchTeams = () => {
     return new Promise((resolve, reject) => {
         try {
-            const result = match(4, teams)
+            const result = match(teams.length, teams)
             console.log(util.inspect(result, false, null, true))
             resolve(result)
         } catch (error) {
