@@ -51,7 +51,6 @@ const getNextGameDay = (startDate, startDay, gameDayNums, skipHolidays) => {
         date.setDate(date.getDate() + days);
         return date;
     }
-    console.log(holiday_dates)
 
     let nextGameDate = new Date(startDate);
     let nextGameDay
@@ -65,9 +64,6 @@ const getNextGameDay = (startDate, startDay, gameDayNums, skipHolidays) => {
     }
 
     nextGameDate.setDate(nextGameDate.getDate() + ((7-nextGameDate.getDay())%7+nextGameDay) % 7);
-
-    console.log(nextGameDate)
-
 
     //check to see if gameDate is a holiday
     if(skipHolidays) {
@@ -157,10 +153,17 @@ const assignMatchesToDays = ({startDate, gameDays, matchSets, matchesPerSet, mat
 
     seasonSchedule.first_game_date = nextGameDate
     
-    const gameDates = []
+    getGameDates({firstGameDate: nextGameDate, firstGameDay: nextGameDay, gameDayNums, skipHolidays})
+
 
 
     console.log(seasonSchedule)
+}
+
+const getGameDates = ({firstGameDate, firstGameDay, gameDayNums, skipHolidays}) => {
+    const gameDates = []
+    const {nextGameDate, nextGameDay} = getNextGameDay(firstGameDate, firstGameDay, gameDayNums, skipHolidays)
+    console.log(`Next game date: ${getYYYYMMDD(nextGameDate)}, which is a ${WEEK_DAYS[nextGameDay]}.`)
 }
 
 
