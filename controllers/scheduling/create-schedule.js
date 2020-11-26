@@ -5,6 +5,8 @@ const util = require('util')
 const {matchTeams} = require('../scheduling/match-teams')
 
 const WEEK_DAYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+const holiday_dates = BC_HOLIDAYS.map((holiday) => holiday.start.date)
+
 
 
 const getFormattedMatches = (match_number, teams) => {
@@ -43,8 +45,15 @@ const getGameDays = (match_days) => {
 }
 
 //startDay is the 0-6 number representation of the season's start date
-const getNextGameDay = (startDay, gameDayNums) => {
-    const nextGameDate = new Date();
+const getNextGameDay = (startDate, startDay, gameDayNums, skipHolidays) => {
+    Date.prototype.addDays = function(days) {
+        const date = new Date(this.valueOf());
+        date.setDate(date.getDate() + days);
+        return date;
+    }
+    console.log(holiday_dates)
+
+    let nextGameDate = new Date(startDate);
     let nextGameDay
 
     for (let day of gameDayNums) {
@@ -56,7 +65,28 @@ const getNextGameDay = (startDay, gameDayNums) => {
     }
 
     nextGameDate.setDate(nextGameDate.getDate() + ((7-nextGameDate.getDay())%7+nextGameDay) % 7);
-    return(nextGameDate)
+
+    console.log(nextGameDate)
+
+
+    //check to see if gameDate is a holiday
+    if(skipHolidays) {
+        while (holiday_dates.includes(getYYYYMMDD(nextGameDate))) {
+            //do it again
+            nextGameDate = nextGameDate.addDays(1)
+
+            for (let day of gameDayNums) {
+                if(nextGameDate.getDay() < day) {
+                    nextGameDay = day;
+                } else {
+                    nextGameDay = gameDayNums[0] //the first gameDay of the week
+                }
+            }
+            nextGameDate.setDate(nextGameDate.getDate() + ((7-nextGameDate.getDay())%7+nextGameDay) % 7);
+        }
+    }
+
+    return({nextGameDate, nextGameDay})
 }
 
 const generateSeasonSchedule = (season) => {
@@ -79,7 +109,7 @@ const generateSeasonSchedule = (season) => {
             console.log(util.inspect(matchSets, false, null, true))
 
             //startDate //to year-month-day
-            console.log(startDate)
+            console.log(`season start date: ${startDate}`)
 
             //gameDays
             const gameDays = getGameDays(season.match_days)
@@ -98,7 +128,7 @@ const generateSeasonSchedule = (season) => {
                 spillover: "linear" //if there are 2 gameDays and 3 matchesPerSet, then the third game of every set will be assigned to a set gameDay
             }
 
-            assignMatchesToDays({startDate: season.season_start, gameDays, matchSets, matchesPerSet, matchSetsPerWeek: season.match_sets_per_week, options: defaultOptions})
+            assignMatchesToDays({startDate: season.season_start, gameDays, matchSets, matchesPerSet, matchSetsPerWeek: season.match_sets_per_week, skipHolidays: season.skip_holidays, options: defaultOptions})
 
             resolve(result)
         } catch (err) {
@@ -107,20 +137,30 @@ const generateSeasonSchedule = (season) => {
     })
 }
 
-const assignMatchesToDays = ({startDate, gameDays, matchSets, matchesPerSet, matchSetsPerWeek, options}) => {
+const assignMatchesToDays = ({startDate, gameDays, matchSets, matchesPerSet, matchSetsPerWeek, skipHolidays, options}) => {
+    const seasonSchedule = {}
+    seasonSchedule.start_date = startDate
+    seasonSchedule.game_days = gameDays
+    
     const startDay = new Date(startDate).getDay() //sunday is 0
-    console.log(startDay) //ie. 3 for wednesday
+    //ie. 3 for wednesday
 
     const gameDayNums = gameDays.map((day) => {
         return WEEK_DAYS.indexOf(day);
     })
 
-    console.log(gameDayNums)
+    seasonSchedule.game_days_nums = gameDayNums
 
     //find the first gameDay after the startDate
-    const nextGameDay = getNextGameDay(startDay, gameDayNums)
-    console.log(getYYYYMMDD(nextGameDay))
+    const {nextGameDate, nextGameDay} = getNextGameDay(startDate, startDay, gameDayNums, skipHolidays)
+    console.log(`Next game date: ${getYYYYMMDD(nextGameDate)}, which is a ${WEEK_DAYS[nextGameDay]}.`)
+
+    seasonSchedule.first_game_date = nextGameDate
     
+    const gameDates = []
+
+
+    console.log(seasonSchedule)
 }
 
 
