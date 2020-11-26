@@ -3,19 +3,8 @@ const {match} = require('./round-robin')
 const BC_HOLIDAYS = require('../bc-holidays')
 
 
-const getLeagueTeams = (league_id) => {
-    return new Promise((resolve, reject) => {
-        try {
-            const teams = await db.getTeamsByLeague({league_id})
-            resolve(teams)
-        } catch (err) {
-            reject(err)
-        }
-    })
-}
-
 const generateSeasonSchedule = (season) => {
-    return new Promise(async(resolve, reject) => {
+    return new Promise( async(resolve, reject) => {
         try {
             let result
 
@@ -26,6 +15,8 @@ const generateSeasonSchedule = (season) => {
 
             const teams = await db.getTeamsByLeague({league_id: season.league_id})
             console.log(teams)
+            const players = teams[0].players
+            console.log(players)
 
             resolve(result)
         } catch (err) {
