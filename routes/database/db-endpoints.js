@@ -526,9 +526,10 @@ router.post('/create/schedule', protectedPostRoute, async (req, res) => {
             const {generateSeasonSchedule} = require('../../controllers/scheduling/create-schedule')
 
             const result = await generateSeasonSchedule(req.body.season)
+            result.league_id = req.body.season.league_id
             
             console.log(result)
-            
+
             
             // const result = await db.createSeasonSchedule({
                 

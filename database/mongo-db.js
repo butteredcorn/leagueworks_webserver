@@ -584,11 +584,11 @@ const getSeasonSchedule = ({season_schedule_id}) => {
     })
 }
 
-const createSeasonSchedule = ({league_id, matches, season_start, season_end, season_arenas, match_days, skip_holidays}) => {
+const createSeasonSchedule = ({league_id, start_date, end_date, game_days, match_sets, game_dates, events, season_arenas, skip_holidays}) => {
     return new Promise(async (resolve, reject) => {
         try {            
             if (!db) await mongoStart()
-            await db.collection('season_schedules').insertOne({league_id, matches, season_start, season_end, season_arenas, match_days, skip_holidays}, (err, res) => {
+            await db.collection('season_schedules').insertOne({league_id, start_date, end_date, game_days, match_sets, game_dates, events, season_arenas, skip_holidays}, (err, res) => {
                 if(err) reject(err)
                 resolve(res.ops)
             })
