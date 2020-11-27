@@ -55,9 +55,9 @@ module.exports = function () {
         }
     })
 
-    const users = {} //dictionary of online sockets
-
     io.on('connection', async (socket) => {
+        const users = {} //dictionary of online sockets
+
         console.log('a user connected');
         //console.log(socket.user)
         //console.log(socket.otherUserID)
@@ -93,7 +93,7 @@ module.exports = function () {
         socket.on('disconnect', () => {
           console.log('user disconnected');
           delete users[socket.user._id]
-          console.log(`Remaining online sockets: ${Object.keys(users)}.`)
+          console.log(`Remaining online sockets: ${users} ${Object.keys(users)}.`)
         });
       });
 

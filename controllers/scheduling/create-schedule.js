@@ -153,14 +153,18 @@ const assignMatchesToDays = ({startDate, gameDays, matchSets, matchesPerSet, mat
 
     seasonSchedule.first_game_date = nextGameDate
     
-    getGameDates({firstGameDate: nextGameDate, firstGameDay: nextGameDay, gameDayNums, skipHolidays})
+    getGameDates({firstGameDate: nextGameDate, firstGameDay: nextGameDay, gameDayNums, skipHolidays, matchSets, matchesPerSet, matchSetsPerWeek})
 
 
 
     console.log(seasonSchedule)
 }
 
-const getGameDates = ({firstGameDate, firstGameDay, gameDayNums, skipHolidays}) => {
+//handles holidays
+//it will return the next game day
+//combine with hash function
+//this should handle options here
+const getGameDates = ({firstGameDate, firstGameDay, gameDayNums, skipHolidays, matchSets, matchesPerSet, matchSetsPerWeek}) => {
     const gameDates = []
     const {nextGameDate, nextGameDay} = getNextGameDay(firstGameDate, firstGameDay, gameDayNums, skipHolidays)
     console.log(`Next game date: ${getYYYYMMDD(nextGameDate)}, which is a ${WEEK_DAYS[nextGameDay]}.`)
