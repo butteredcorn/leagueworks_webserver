@@ -103,89 +103,11 @@ const getNextGameDay = (startDate, startDay, gameDayNums, skipHolidays) => {
     return({nextGameDate, nextGameDay})
 }
 
-const generateSeasonSchedule = (season) => {
-    return new Promise( async(resolve, reject) => {
-        try {
-            let result
-
-            console.log(season)
-
-            const startDate = getYYYYMMDD(season.season_start)
-
-            const teams = await db.getTeamsByLeague({league_id: season.league_id})
-            console.log(teams)
-            //const players = teams[0].players
-            //console.log(players)
-
-            const {matchSets, matchesPerSet} = getFormattedMatches(season.match_number, teams)
-            if(!Number.isInteger(matchesPerSet)) throw new Error(`Integer is expected: uniform matchesPerSet is expected. It was ${matchesPerSet}.`)
-
-            console.log(util.inspect(matchSets, false, null, true))
-
-            //startDate //to year-month-day
-            console.log(`season start date: ${startDate}`)
-
-            //gameDays
-            const gameDays = getGameDays(season.match_days)
-            console.log(gameDays)
-
-            //matches per set
-            //console.log(matchesPerSet)
-            
-            //figure out the weekly schedule
-            //match_sets_per_week, match_set_(n)th
-            //assign matches to gameDays*** ----> need one more instruction from front end to determine how to handle this
-
-            //options is essentially hash function
-            const defaultOptions = {
-                hash: "uniform", //if there are 2 gameDays and 2 matchesPerSet, then each gameDay gets one match from the set
-                spillover: "linear" //if there are 2 gameDays and 3 matchesPerSet, then the third game of every set will be assigned to a set gameDay
-            }
-
-            assignMatchesToDays({startDate: season.season_start, gameDays, matchSets, matchesPerSet, matchSetsPerWeek: season.match_sets_per_week, skipHolidays: season.skip_holidays, options: defaultOptions})
-
-            resolve(result)
-        } catch (err) {
-            reject(err)
-        }
-    })
-}
-
-const assignMatchesToDays = ({startDate, gameDays, matchSets, matchesPerSet, matchSetsPerWeek, skipHolidays, options}) => {
-    const seasonSchedule = {}
-    seasonSchedule.start_date = startDate
-    seasonSchedule.game_days = gameDays
-    
-    const startDay = new Date(startDate).getDay() //sunday is 0
-    //ie. 3 for wednesday
-
-    const gameDayNums = gameDays.map((day) => {
-        return WEEK_DAYS.indexOf(day);
-    })
-
-    seasonSchedule.game_days_nums = gameDayNums
-
-    //find the first gameDay after the startDate
-    const {nextGameDate, nextGameDay} = getNextGameDay(startDate, startDay, gameDayNums, skipHolidays)
-    console.log(`Next game date: ${getYYYYMMDD(nextGameDate)}, which is a ${WEEK_DAYS[nextGameDay]}.`)
-
-    seasonSchedule.first_game_date = nextGameDate
-    
-    getGameDates({firstGameDate: nextGameDate, firstGameDay: nextGameDay, gameDayNums, skipHolidays, matchSets, matchesPerSet, matchSetsPerWeek})
-
-
-    //handle options here
-
-
-    console.log(seasonSchedule)
-}
-
 //handles holidays
-//it will return the next game day
-//combine with hash function
+//it will return the next game dates
 const getGameDates = ({firstGameDate, firstGameDay, gameDayNums, skipHolidays, matchSets, matchesPerSet, matchSetsPerWeek}) => {
     //number of game dates per week = days per week played (compare to matches, enough to fill)
-    const numGameDatesPerWeek = gameDayNums.length > matchesPerSet ? gameDayNums.length : matchesPerSet
+    const numGameDatesPerWeek = gameDayNums.length < matchesPerSet ? gameDayNums.length : matchesPerSet
     //number of games dates = games dates per week * the number of match sets / the number of match sets played in a week
     const numGameDates = numGameDatesPerWeek * Object.keys(matchSets).length / matchSetsPerWeek
 
@@ -205,14 +127,142 @@ const getGameDates = ({firstGameDate, firstGameDay, gameDayNums, skipHolidays, m
         gameDay = nextGameDay
     }
 
-    console.log(gameDates)
+    return {gameDates, numGameDatesPerWeek}
+}
 
-    console.log(holiday_dates)
-    console.log(holiday_dates.includes('2021-02-15'))
+const generateSeasonSchedule = (season) => {
+    return new Promise( async(resolve, reject) => {
+        try {
+            console.log(season)
+
+            const teams = await db.getTeamsByLeague({league_id: season.league_id})
+            console.log(teams)
+            //const players = teams[0].players
+            //console.log(players)
+
+            const {matchSets, matchesPerSet} = getFormattedMatches(season.match_number, teams)
+            if(!Number.isInteger(matchesPerSet)) throw new Error(`Integer is expected: uniform matchesPerSet is expected. It was ${matchesPerSet}.`)
+
+            //console.log(util.inspect(matchSets, false, null, true))
+
+            //startDate //to year-month-day
+            //console.log(`season start date: ${startDate}`)
+
+            //gameDays
+            const gameDays = getGameDays(season.match_days)
+            //console.log(gameDays)
+
+            //matches per set
+            //console.log(matchesPerSet)
+            
+            //figure out the weekly schedule
+            //match_sets_per_week, match_set_(n)th
+            //assign matches to gameDays*** ----> need one more instruction from front end to determine how to handle this
+
+            //options is essentially hash function
+            const defaultOptions = {
+                hash: "uniform", //if there are 2 gameDays and 2 matchesPerSet, then each gameDay gets one match from the set
+                remainder: "linear" //if there are 2 gameDays and 3 matchesPerSet, then the third game of every set will be assigned to a set gameDay
+            }
+
+            const result = assignMatchesToDays({startDate: season.season_start, gameDays, matchSets, matchesPerSet, matchSetsPerWeek: season.match_sets_per_week, skipHolidays: season.skip_holidays, options: defaultOptions})
+
+            resolve(result)
+        } catch (err) {
+            reject(err)
+        }
+    })
+}
+
+const assignMatchesToDays = ({startDate, gameDays, matchSets, matchesPerSet, matchSetsPerWeek, skipHolidays, options}) => {
+    const seasonSchedule = {}
+    seasonSchedule.start_date = startDate
+    seasonSchedule.game_days = gameDays
+    
+    const gameDayNums = gameDays.map((day) => {
+        return WEEK_DAYS.indexOf(day);
+    })
+
+    seasonSchedule.game_days_nums = gameDayNums
+    seasonSchedule.match_sets = matchSets
+
+    const startDay = new Date(startDate).getDay() //sunday is 0
+    
+    const {gameDates, numGameDatesPerWeek} = getGameDates({firstGameDate: startDate, firstGameDay: startDay, gameDayNums, skipHolidays, matchSets, matchesPerSet, matchSetsPerWeek})
+    seasonSchedule.game_dates = gameDates
+
+    //handle options here
+    //now time to assign games to gameDates through the hashfunction and its options
+    //reference: gameDates, matchSets, matchesPerSet, matchSetsPerWeek
+    const events = matchSetsToDays({gameDates, matchSets, matchesPerSet, matchSetsPerWeek, numGameDatesPerWeek, options})
+
+    // console.log(events)
+    // console.log('Game days:' + gameDates.length)
+    // console.log('Games to be played:' + Object.keys(matchSets).length * matchesPerSet)
+    // console.log(events.length)
+
+    seasonSchedule.events = events
+
+    return seasonSchedule
+}
+
+
+//need to implement options
+const matchSetsToDays = ({gameDates, matchSets, matchesPerSet, matchSetsPerWeek, numGameDatesPerWeek, options}) => {
+    if (options.hash != "uniform") throw new Error("Other options to be implemented in future release.")
+    const numGamesPerDateAverage = matchesPerSet * matchSetsPerWeek / numGameDatesPerWeek
+    const quotient = Math.floor(matchesPerSet * matchSetsPerWeek / numGameDatesPerWeek); // ie. 1
+    const remainder = matchesPerSet * matchSetsPerWeek % numGameDatesPerWeek; // ie. r1
+
+    const events = []
+    let i = 0; 
+
+    //for each matchSet
+    for (let match_set in matchSets) {
+        let remainderMatchesPerSet = remainder
+
+        for (let match of matchSets[match_set]) {
+        //for (let j = 0; j < match_set.length; j++) {
+            // const homeTeam = match_set[j][0].home_team ? match_set[j][0] : match_set[j][1]
+            // const awayTeam = !match_set[j][0].home_team ? match_set[j][0] : match_set[j][1]
+            const homeTeam = match[0].home_team ? match[0] : match[1]
+            const awayTeam = !match[0].home_team ? match[0] : match[1]
+
+            if (remainderMatchesPerSet != 0) {
+                while(remainderMatchesPerSet > 0) {
+                    const remainderEvent = {
+                        summary: `${homeTeam.team_name} vs. ${awayTeam.team_name}`,
+                        home_team: homeTeam.team_id,
+                        home_team_players: homeTeam.players,
+                        away_team: awayTeam.team_id,
+                        away_team_players: awayTeam.players,
+                        start_date: getYYYYMMDD(gameDates[Math.floor(i/quotient)]) //first game date
+                    }
+                    events.push(remainderEvent)
+                    remainderMatchesPerSet--;
+                }
+            } else {
+                //where quotient is game per date minimum
+                const event = {
+                    summary: `${homeTeam.team_name} vs. ${awayTeam.team_name}`,
+                    home_team: homeTeam.team_id,
+                    home_team_players: homeTeam.players,
+                    away_team: awayTeam.team_id,
+                    away_team_players: awayTeam.players,
+                    start_date: getYYYYMMDD(gameDates[Math.floor(i/quotient)]) //first game date
+                }
+                events.push(event)
+                i++; //where one to one, just assign one event to one date
+            }
+        }
+    }
+
+    return events
 }
 
 
 
 module.exports = {
-    generateSeasonSchedule
+    generateSeasonSchedule,
+    getYYYYMMDD
 }

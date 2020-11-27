@@ -56,8 +56,8 @@ const match = (numTeams, teams) => {
       for (let i = 0; i < numTeams / 2; i += 1) {
         if (JSON.stringify(teams[i]) !== JSON.stringify(dummyTeam) && JSON.stringify(teams[numTeams - 1 - i]) !== JSON.stringify(dummyTeam)) {
           const home_team = Math.random() < 0.5;  //randomize homefield advantage
-          const teamOne = {team_id: teams[i]._id, home_team: home_team}
-          const teamTwo = {team_id: teams[numTeams - 1 - i]._id, home_team: !home_team}
+          const teamOne = {team_id: teams[i]._id, team_name: teams[i].team_name, home_team: home_team, players: teams[i].players}
+          const teamTwo = {team_id: teams[numTeams - 1 - i]._id, team_name: teams[numTeams - 1 - i].team_name, home_team: !home_team, players: teams[numTeams - 1 - i].players}
           matches[j].push([teamOne, teamTwo]); // insert pair as a match
         }
       }

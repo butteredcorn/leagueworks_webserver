@@ -526,11 +526,14 @@ router.post('/create/schedule', protectedPostRoute, async (req, res) => {
             const {generateSeasonSchedule} = require('../../controllers/scheduling/create-schedule')
 
             const result = await generateSeasonSchedule(req.body.season)
+            
+            console.log(result)
+            
+            
             // const result = await db.createSeasonSchedule({
                 
             // })
 
-            result ? result : {message: "work in progress"}
 
             if (logging) console.log(result)
             res.send(result)
