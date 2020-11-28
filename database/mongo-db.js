@@ -88,6 +88,10 @@ const resetDatabase =  () => {
                 if (error) reject(error)
                 console.log(res)
             })
+            await db.collection('posts').drop((error, res) => {
+                if (error) reject(error)
+                console.log(res)
+            })
             await db.collection('arenas').drop((error, res) => {
                 if (error) reject(error)
                 console.log(res)
@@ -106,6 +110,10 @@ const resetDatabase =  () => {
             const arenas = require('./assets/arenas')
             await loadArenas(arenas)
             
+            await db.createCollection('posts', (error, res) => {
+                if (error) reject(error)
+                console.log(res.namespace)
+            })
             await db.createCollection('matches', (error, res) => {
                 if (error) reject(error)
                 console.log(res.namespace)
@@ -765,6 +773,58 @@ const createMessage = ({sender_id, receivers, message, thumbnail_link, socket_ke
     })
 }
 
+const getPost = ({post_id}) => {
+    return new Promise (async (resolve, reject) => {
+        try {
+            if (!db) await mongoStart()
+
+            if (post_id) {
+                await db.collection('posts').findOne({_id: ObjectID(post_id)}, (err, doc) => {
+                    if(err) {
+                        reject(err)
+                    }
+                    resolve(doc)
+                })
+            } else {
+                throw new Error(`Please specify valid post_id. It was ${post_id}.`)
+            }
+        } catch(err) {
+            reject(err)
+        }
+    })
+}
+
+const getUserPosts = ({user_id}) => {
+    return new Promise(async(resolve, reject) => {
+        try {
+            if (!user_id) throw new Error('Please provide valid user_id.')
+
+            if (!db) await mongoStart()
+            await db.collection('posts').find({user_id: user_id}).toArray((err, result) => {
+                if (err) reject(err)
+                resolve(result)
+            })
+        } catch (err) {
+            reject(err)
+        }
+    })
+}
+
+const createPost = ({user_id, title, description, thumbnail_link, likes, league_id}) => {
+    return new Promise(async (resolve, reject) => {
+        try {            
+            if (!db) await mongoStart()
+            const timeStamp = Date.now()
+            await db.collection('posts').insertOne({user_id, title, description, thumbnail_link, likes, league_id, timeStamp}, (err, res) => {
+                if(err) reject(err)
+                resolve(res.ops)
+            })
+        } catch(err) {
+                reject(err)
+        }
+    })
+}
+
 module.exports = {
     mongoStart,
     mongoClose,
@@ -798,4 +858,7 @@ module.exports = {
     getUserMessages,
     getMessagesBySocketKey,
     createMessage,
+    getPost,
+    getUserPosts,
+    createPost,
 }

@@ -634,4 +634,58 @@ router.post('/create/message', protectedPostRoute, async (req, res) => {
     }
 })
 
+router.post('/read/post', protectedPostRoute, async (req, res) => {
+    try {
+        if (!req.body.post) throw new Error(`No post object found. req.body.post was ${req.body.post}`)
+
+        if (req.body && req.body.post) {
+            const result = await db.getPost({post_id: req.body.post.post_id})
+            if (logging) console.log(result)
+            res.send(result)
+        }
+    } catch (err) {
+        if(logging) console.log(err.message)
+        res.send({error: err.message})
+    }
+})
+
+router.post('/read/userposts', protectedPostRoute, async (req, res) => {
+    try {
+        if (!req.body.user) throw new Error(`No user object found. req.body.user was ${req.body.user}`)
+
+        if (req.body && req.body.user) {
+            const result = await db.getUserPosts({user_id: req.body.user.user_id})
+            if (logging) console.log(result)
+            res.send(result)
+        }
+    } catch (err) {
+        if(logging) console.log(err.message)
+        res.send({error: err.message})
+    }
+})
+
+router.post('/create/post', protectedPostRoute, async (req, res) => {
+    try {
+        if (!req.body.post) throw new Error(`No post object found. req.body.post was ${req.body.post}`)
+
+        if(req.body && req.body.post) {
+            
+            const result = await db.createPost({
+                user_id: req.body.post.user_id,
+                title: req.body.post.title,
+                description: req.body.post.description,
+                thumbnail_link: req.body.post.thumbnail_link,
+                likes: [],
+                league_id: req.body.post.league_id
+            })
+
+            if (logging) console.log(result)
+            res.send(result)
+        }
+    } catch (err) {
+        if(logging) console.log(err.message)
+        res.send({error: err.message})
+    }
+})
+
 module.exports = router
