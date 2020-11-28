@@ -617,10 +617,17 @@ const getUserSchedules = ({user_id}) => {
             if(user.leagues.length == 0) {
                 resolve('No leagues joined. No schedules found.')
             } else {
+                
                 const userSchedules = []
                 for (let league_id of user.leagues) { 
                     const schedules =  await db.collection('season_schedules').find({league_id: league_id}).toArray()
-                    const latestSchedule = schedules.reduce((a, b) => (a.timeStamp > b.timeStamp ? a : b));
+                    let latestSchedule
+                    if(schedules.length > 1) {
+                        latestSchedule = schedules.reduce((a, b) => (a.timeStamp > b.timeStamp ? a : b));
+                    } else {
+                        latestSchedule = schedules[0]
+                    }
+                    if (!latestSchedule) continue;
                     userSchedules.push(latestSchedule)
                 }
                 resolve(userSchedules)
