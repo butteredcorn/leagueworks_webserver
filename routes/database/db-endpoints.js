@@ -700,4 +700,24 @@ router.post('/create/post', protectedPostRoute, async (req, res) => {
     }
 })
 
+router.post('/like/post', protectedPostRoute, async (req, res) => {
+    try {
+        if (!req.body.post) throw new Error(`No post object found. req.body.post was ${req.body.post}`)
+
+        if(req.body && req.body.post) {
+            
+            const result = await db.likePost({
+                user_id: req.body.post.user_id,
+                post_id: req.body.post.post_id
+            })
+
+            if (logging) console.log(result)
+            res.send(result)
+        }
+    } catch (err) {
+        if(logging) console.log(err.message)
+        res.send({error: err.message})
+    }
+})
+
 module.exports = router
