@@ -9,7 +9,7 @@ const {MINIMUM_AGE_REQUIREMENT} = require('../../globals').platform_restrictions
  * return newly created user
  * 
  */
-const signUpUser = ({first_name, last_name, birth_date, phone_number, user_type, email, password}) => {
+const signUpUser = ({first_name, last_name, birth_date, phone_number, thumbnail_link, user_type, email, password}) => {
     
     //calculate age from birthday here
     const age = 18;
@@ -27,7 +27,7 @@ const signUpUser = ({first_name, last_name, birth_date, phone_number, user_type,
                 // hash(password)
                 .then(async (hashedPassword) => {
                     try {
-                        const newUser = {first_name: first_name, last_name: last_name, birth_date: birth_date, phone_number: phone_number, user_type: user_type, email: email, password_hash: hashedPassword, leagues: [], messages: []}
+                        const newUser = {first_name: first_name, last_name: last_name, birth_date: birth_date, phone_number: phone_number, thumbnail_link: thumbnail_link, user_type: user_type, email: email, password_hash: hashedPassword, leagues: [], messages: []}
                         await db.createUser(newUser) //for some reason, can't modify the return result, delete won't work, can't call the properties???
                         const user = await db.getUser({email: email})
                         delete user.password_hash
