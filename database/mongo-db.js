@@ -589,7 +589,7 @@ const getScheduleByLeague = ({league_id}) => {
         try {
             if (!db) await mongoStart()
 
-            if (season_schedule_id) {
+            if (league_id) {
                 await db.collection('season_schedules').find({league_id: league_id}).toArray((err, doc) => {
                     if(err) {
                         reject(err)
@@ -597,7 +597,7 @@ const getScheduleByLeague = ({league_id}) => {
                     resolve(doc)
                 })
             } else {
-                throw new Error(`Please specify valid season_schedule_id. It was ${season_schedule_id}.`)
+                throw new Error(`Please specify valid league_id. It was ${league_id}.`)
             }
     
         } catch(err) {
