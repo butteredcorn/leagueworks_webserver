@@ -794,6 +794,20 @@ const getPost = ({post_id}) => {
     })
 }
 
+const getAllPosts = () => {
+    return new Promise(async(resolve, reject) => {
+        try {
+            if (!db) await mongoStart()
+            await db.collection('posts').find({}).toArray((err, result) => {
+                if (err) reject(err)
+                resolve(result)
+            })
+        } catch (err) {
+            reject(err)
+        }
+    })
+}
+
 const getUserPosts = ({user_id}) => {
     return new Promise(async(resolve, reject) => {
         try {
@@ -859,6 +873,7 @@ module.exports = {
     getMessagesBySocketKey,
     createMessage,
     getPost,
+    getAllPosts,
     getUserPosts,
     createPost,
 }

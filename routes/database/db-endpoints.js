@@ -649,6 +649,17 @@ router.post('/read/post', protectedPostRoute, async (req, res) => {
     }
 })
 
+router.post('/read/posts', protectedPostRoute, async (req, res) => {
+    try {
+        const result = await db.getAllPosts()
+        if (logging) console.log(result)
+        res.send(result)
+    } catch (err) {
+        if(logging) console.log(err.message)
+        res.send({error: err.message})
+    }
+})
+
 router.post('/read/userposts', protectedPostRoute, async (req, res) => {
     try {
         if (!req.body.user) throw new Error(`No user object found. req.body.user was ${req.body.user}`)
