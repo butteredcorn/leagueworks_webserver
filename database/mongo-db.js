@@ -679,13 +679,49 @@ const getUserMessages = ({user_id}) => {
         try {
             if (!db) await mongoStart()
 
-            if (user_id) {
-                await db.collection('messages').find({$or: [{sender_id: user_id},{receivers: user_id}]}).toArray((err, doc) => {
-                    if(err) {
-                        reject(err)
+            function sortMessages(user_id, messages) {
+                const uniqueOtherUsers = {}
+        
+                //for timestamp, larger date is newer
+                for (let message of messages) {
+                    if(message.sender_id != user_id) {
+                        if (!uniqueOtherUsers[message.sender_id] && message.timeStamp) {
+                            uniqueOtherUsers[message.sender_id] = message
+                        } else {
+                            if (new Date(uniqueOtherUsers[message.sender_id].timeStamp) < new Date(message.timeStamp)) {
+                                //bind the latest message
+                                uniqueOtherUsers[message.sender_id] = message
+                            }
+                        }
+                    } else if (!message.receivers.includes(user_id)) {
+                        //if private message, ignore broadcasts here
+                        if(!uniqueOtherUsers[message.receivers[0]] && message.timeStamp) {
+                            uniqueOtherUsers[message.receivers[0]] = message
+                        } else {
+                            if(message.timeStamp && new Date(uniqueOtherUsers[message.receivers[0]].timeStamp) < new Date(message.timeStamp)) {
+                                uniqueOtherUsers[message.receivers[0]] = message
+                            }
+                        }
                     }
-                    resolve(doc)
-                })
+                }
+                //now we have a map of uniqueOtherUserIDs to the most recent message
+                return uniqueOtherUsers
+            }
+
+            if (user_id) {
+                const userMessageArray = await db.collection('messages').find({$or: [{sender_id: user_id},{receivers: user_id}]}).toArray()
+                //console.log(userMessageArray)
+                const sortedMessages = sortMessages(user_id, userMessageArray)
+                for (let [key, message] of Object.entries(sortedMessages)) {
+                    if(message.receivers.length > 1) throw new Error('sorting only handles one to one messages')
+                    const otherUserID = message.sender_id == user_id ? message.receivers[0] : message.sender_id
+                    console.log(message)
+                    console.log(otherUserID)
+                    const otherUser = await getUser({user_id: otherUserID})
+                    message.other_user_first_name = otherUser.first_name
+                    message.other_user_last_name = otherUser.last_name
+                }
+                resolve(sortedMessages)
             } else {
                 throw new Error(`Please specify valid user_id. It was ${user_id}.`)
             }
