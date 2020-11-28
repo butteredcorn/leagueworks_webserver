@@ -350,12 +350,12 @@ const getAllLeagues = () => {
     })
 }
 
-const createLeague = ({league_name, phone_number, email, sport_type, headline}) => {
+const createLeague = ({league_name, phone_number, email, sport_type, headline, thumbnail_link}) => {
     return new Promise(async (resolve, reject) => {
         try {            
             if (!db) await mongoStart()
             const timeStamp = Date.now()
-            await db.collection('leagues').insertOne({league_name, phone_number, email, sport_type, headline, timeStamp}, (err, res) => {
+            await db.collection('leagues').insertOne({league_name, phone_number, email, sport_type, headline, thumbnail_link, timeStamp}, (err, res) => {
                 if(err) reject(err)
                 resolve(res.ops)
             })

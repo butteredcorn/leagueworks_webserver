@@ -242,7 +242,8 @@ router.post('/create/league', protectedPostRoute, async (req, res) => {
                 phone_number: req.body.league.phone_number,
                 email: req.body.league.email,
                 sport_type: req.body.league.sport_type,
-                headline: req.body.league.headline
+                headline: req.body.league.headline,
+                thumbnail_link: req.body.league.thumbnail_link
             })
 
             //and automatically join the league!!
@@ -371,7 +372,8 @@ router.post('/create/team', protectedPostRoute, async (req, res) => {
                 phone_number: req.body.team.phone_number,
                 email: req.body.team.email,
                 captain_id: req.body.team.captain_id,
-                players: req.body.team.players
+                players: req.body.team.players,
+                thumbnail_link: req.body.team.thumbnail_link
             })
             if (logging) console.log(result)
             res.send(result)
