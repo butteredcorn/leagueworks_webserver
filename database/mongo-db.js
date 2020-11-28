@@ -584,11 +584,34 @@ const getSeasonSchedule = ({season_schedule_id}) => {
     })
 }
 
+const getScheduleByLeague = ({league_id}) => {
+    return new Promise (async (resolve, reject) => {
+        try {
+            if (!db) await mongoStart()
+
+            if (season_schedule_id) {
+                await db.collection('season_schedules').find({league_id: league_id}).toArray((err, doc) => {
+                    if(err) {
+                        reject(err)
+                    }
+                    resolve(doc)
+                })
+            } else {
+                throw new Error(`Please specify valid season_schedule_id. It was ${season_schedule_id}.`)
+            }
+    
+        } catch(err) {
+            reject(err)
+        }
+    })
+}
+
 const createSeasonSchedule = ({league_id, start_date, end_date, game_days, match_sets, game_dates, events, season_arenas, skip_holidays}) => {
     return new Promise(async (resolve, reject) => {
         try {            
             if (!db) await mongoStart()
-            await db.collection('season_schedules').insertOne({league_id, start_date, end_date, game_days, match_sets, game_dates, events, season_arenas, skip_holidays}, (err, res) => {
+            const timeStamp = Date.now()
+            await db.collection('season_schedules').insertOne({league_id, start_date, end_date, game_days, match_sets, game_dates, events, season_arenas, skip_holidays, timeStamp}, (err, res) => {
                 if(err) reject(err)
                 resolve(res.ops)
             })
@@ -700,6 +723,7 @@ module.exports = {
     createMatch,
     updateMatch,
     getSeasonSchedule,
+    getScheduleByLeague,
     createSeasonSchedule,
     getMessage,
     getUserMessages,

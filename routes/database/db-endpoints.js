@@ -500,6 +500,21 @@ router.post('/read/schedule', protectedPostRoute, async (req, res) => {
     }
 })
 
+router.post('/read/leagueSchedule', protectedPostRoute, async (req, res) => {
+    try {
+        if (!req.body.league) throw new Error(`No league object found. req.body.league was ${req.body.league}`)
+
+        if (req.body && req.body.league) {
+            const result = await db.getScheduleByLeague({league_id: req.body.league.league_id})
+            if (logging) console.log(result)
+            res.send(result)
+        }
+    } catch (err) {
+        if(logging) console.log(err.message)
+        res.send({error: err.message})
+    }
+})
+
 router.post('/create/schedule', protectedPostRoute, async (req, res) => {
     try {
         if (!req.body.season) throw new Error(`No schedule object found. req.body.season was ${req.body.season}`)
@@ -528,18 +543,17 @@ router.post('/create/schedule', protectedPostRoute, async (req, res) => {
 
             const result = await generateSeasonSchedule(req.body.season)
             result.league_id = req.body.season.league_id
+            result.season_arenas = req.body.season.match_day_arenas
 
            // console.log(result)
 
             console.log(req.body.season)
             
-            // const result = await db.createSeasonSchedule({
-                
-            // })
+            const databaseResult = await db.createSeasonSchedule({league_id: result.league_id, start_date: result.start_date, end_date: result.end_date, game_days: result.game_days, match_sets: result.match_sets, game_dates: result.game_dates, events: result.events, season_arenas: result.season_arenas, skip_holidays: req.body.season.skip_holidays})
+            console.log(databaseResult)
 
-
-            if (logging) console.log(result)
-            res.send(result)
+            if (logging) console.log(databaseResult)
+            res.send(databaseResult)
         }
     } catch (err) {
         if(logging) console.log(err.message)

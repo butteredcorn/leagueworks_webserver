@@ -206,7 +206,7 @@ const assignMatchesToDays = ({startDate, gameDays, arenas, matchSets, matchesPer
     
     const {gameDates, numGameDatesPerWeek} = getGameDates({firstGameDate: startDate, firstGameDay: startDay, gameDayNums, skipHolidays, matchSets, matchesPerSet, matchSetsPerWeek})
     seasonSchedule.game_dates = gameDates
-    seasonSchedule.end_date = gameDates[gameDates.length - 1]
+    seasonSchedule.end_date = gameDates[gameDates.length - 1].game_date
     //handle options here
     //now time to assign games to gameDates through the hashfunction and its options
     //reference: gameDates, matchSets, matchesPerSet, matchSetsPerWeek
