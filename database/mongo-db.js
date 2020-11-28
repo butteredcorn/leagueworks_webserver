@@ -844,11 +844,14 @@ const likePost = ({user_id, post_id}) => {
         try {            
             if (!db) await mongoStart()
             const post = await getPost({post_id})
-            if(post.likes.includes(user_id)) throw new Error("Already liked!")
-            await db.collection('posts').findOneAndUpdate({_id: ObjectID(post_id)}, {$set:{likes: [...post.likes, user_id]}}, {returnOriginal: false}, (err, res) => {
-                if(err) reject(err)
-                resolve(res.value)
-            })
+            if(!post.likes.includes(user_id)) {
+                await db.collection('posts').findOneAndUpdate({_id: ObjectID(post_id)}, {$set:{likes: [...post.likes, user_id]}}, {returnOriginal: false}, (err, res) => {
+                    if(err) reject(err)
+                    resolve(res.value)
+                })
+            } else {
+                resolve("Already liked!")
+            }
         } catch(err) {
                 reject(err)
         }
