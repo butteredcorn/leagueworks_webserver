@@ -537,11 +537,11 @@ const getMatch = ({match_id}) => {
     })
 }
 
-const createMatch = ({season_id, home_id, away_id, start_time, end_time, arena_id, winner_id, loser_id}) => {
+const createMatch = ({season_id, summary, home_team, home_team_players, away_team, away_team_players, start_date, arena}) => {
     return new Promise(async (resolve, reject) => {
         try {            
             if (!db) await mongoStart()
-            await db.collection('matches').insertOne({season_id, home_id, away_id, start_time, end_time, arena_id, winner_id, loser_id}, (err, res) => {
+            await db.collection('matches').insertOne({season_id, summary, home_team, home_team_players, away_team, away_team_players, start_date, arena, winner_id, loser_id}, (err, res) => {
                 if(err) reject(err)
                 resolve(res.ops)
             })
