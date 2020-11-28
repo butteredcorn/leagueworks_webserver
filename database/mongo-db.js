@@ -46,11 +46,11 @@ const mongoClose = async() => {
 const loadArenas = (arenas) => {
     return new Promise(async(resolve, reject) => {
         try {
-            arenas.forEach(async(arena, index) => {
+            for (let arena of arenas) {
                 await db.collection('arenas').insertOne({arena_id: arena.google_place_id, name: arena.name, address: arena.address, phone_number: arena.phone_number, location: arena.location, photos: arena.photos, google_rating: arena.rating}, (err, res) => {
                     if (err) reject(err)
                 })
-            })
+            }
             resolve('arenas loaded.')
         } catch (err) {
             reject(err)

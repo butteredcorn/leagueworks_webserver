@@ -510,7 +510,7 @@ router.post('/create/schedule', protectedPostRoute, async (req, res) => {
         const checkGameDaysError = (match_days) => {
             let error = true;
             for (let day in match_days) {
-                if (match_days[day] === true) {
+                if (match_days[day]) {
                     error = false;
                     break; //ensure at least one day has been selected
                 }
@@ -520,6 +520,7 @@ router.post('/create/schedule', protectedPostRoute, async (req, res) => {
 
         if(req.body && req.body.season && req.body.season.match_days) {
             if(checkGameDaysError(req.body.season.match_days)) throw new Error(`At least one day in the week must be set to true. It was ${req.body.season.match_days}.`)
+            if(checkGameDaysError(req.body.season.match_day_arenas)) throw new Error(`Chosen game days must have arenas. It was ${req.body.season.match_day_arenas}.`)
             if(req.body.season.match_number == 0) throw new Error(`match_number cannot be zero.`)
             if(req.body.season.match_sets_per_week < 1) throw new Error(`match_sets_per_week cannot be less than 1.`)
 
@@ -527,9 +528,10 @@ router.post('/create/schedule', protectedPostRoute, async (req, res) => {
 
             const result = await generateSeasonSchedule(req.body.season)
             result.league_id = req.body.season.league_id
-            
-            console.log(result)
 
+           // console.log(result)
+
+            console.log(req.body.season)
             
             // const result = await db.createSeasonSchedule({
                 
