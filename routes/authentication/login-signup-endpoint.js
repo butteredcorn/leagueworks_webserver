@@ -52,7 +52,7 @@ router.post('/signup', async (req, res) => {
         if (!req.body.user) throw new Error(`No user object found. req.body.user was ${req.body.user}`)
 
         if (req.body && req.body.user) {
-            await signUpUser({first_name: req.body.user.first_name, last_name: req.body.user.last_name, birth_date: req.body.user.birth_date, phone_number: req.body.user.phone_number, user_type: req.body.user.user_type, email: req.body.user.email, password: req.body.user.password})
+            await signUpUser({first_name: req.body.user.first_name, last_name: req.body.user.last_name, birth_date: req.body.user.birth_date, phone_number: req.body.user.phone_number, user_type: req.body.user.user_type, email: req.body.user.email, password: req.body.user.password, thumbnail_link: req.body.user.thumbnail_link})
             .then(async (user) => {
                 //move this logic to json-web-token.js
 
