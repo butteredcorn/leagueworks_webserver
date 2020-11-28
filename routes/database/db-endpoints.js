@@ -151,6 +151,7 @@ router.post('/create/user', protectedPostRoute, async (req, res) => {
                 last_name: req.body.user.last_name,
                 birth_date: req.body.user.birth_date,
                 phone_number: req.body.user.phone_number,
+                thumbnail_link: req.body.user.thumbnail_link,
                 email: req.body.user.email,
                 password_hash: req.body.user.password_hash,
                 user_type: req.body.user.user_type

@@ -211,13 +211,13 @@ const getAllUsers = () => {
     })
 }
 
-const createUser = ({first_name, last_name, birth_date, phone_number, user_type, email, password_hash, leagues, messages}) => {
+const createUser = ({first_name, last_name, birth_date, phone_number, thumbnail_link, user_type, email, password_hash, leagues, messages}) => {
     return new Promise(async (resolve, reject) => {
         try {
             if (!db) await mongoStart()
 
             const timeStamp = Date.now()
-            await db.collection('users').insertOne({first_name, last_name, birth_date, phone_number, user_type, email, password_hash, leagues, messages, timeStamp}, (err, res) => {
+            await db.collection('users').insertOne({first_name, last_name, birth_date, phone_number, thumbnail_link, user_type, email, password_hash, leagues, messages, timeStamp}, (err, res) => {
                 if (err) reject(err)
                 resolve(res.ops)
             })
