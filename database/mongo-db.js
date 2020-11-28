@@ -425,12 +425,12 @@ const getTeamsByLeague = ({league_id}) => {
 }
 
 //initialize players to empty array?
-const createTeam = ({league_id, team_name, phone_number, email, captain_id, players}) => {
+const createTeam = ({league_id, team_name, phone_number, email, captain_id, players, thumbnail_link}) => {
     return new Promise(async (resolve, reject) => {
         try {            
             if (!db) await mongoStart()
             const timeStamp = Date.now()
-            await db.collection('teams').insertOne({league_id, team_name, phone_number, email, captain_id, players, timeStamp}, (err, res) => {
+            await db.collection('teams').insertOne({league_id, team_name, phone_number, email, captain_id, players, thumbnail_link, timeStamp}, (err, res) => {
                 if(err) reject(err)
                 resolve(res.ops)
             })

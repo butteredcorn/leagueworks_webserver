@@ -362,7 +362,6 @@ router.post('/read/leagueteams', protectedPostRoute, async (req, res) => {
 
 router.post('/create/team', protectedPostRoute, async (req, res) => {
     try {
-        //console.log(req.body)
         if (!req.body.team) throw new Error(`No team object found. req.body.team was ${req.body.team}`)
 
         if(req.body && req.body.team) {
