@@ -74,6 +74,25 @@ router.post('/read/user', protectedPostRoute, async (req, res) => {
     }  
 })
 
+router.post('/read/userSchedules', protectedPostRoute, async (req, res) => {
+    try {
+        //the queried about user
+        if (!req.body.user) throw new Error(`No user object found. req.body.user was ${req.body.user}`)
+
+        //console.log(req.user) //the logged in user
+
+        if (req.body && req.body.user) {
+            const result = await db.getUserSchedules({user_id: req.body.user.user_id})
+            if (logging) console.log(result)
+            res.send(result)
+        }
+
+    } catch (err) {
+        if(logging) console.log(err.message)
+        res.send({error: err.message})
+    }  
+})
+
 router.post('/update/user', protectedPostRoute, async (req, res) => {
     try {
         //the queried about user

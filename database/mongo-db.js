@@ -606,6 +606,31 @@ const getScheduleByLeague = ({league_id}) => {
     })
 }
 
+const getUserSchedules = ({user_id}) => {
+    return new Promise (async (resolve, reject) => {
+        try {
+            if (!db) await mongoStart()
+
+            if (!user_id) throw new Error('Please provide valid user_id.')
+
+            const user = await getUser({user_id: user_id})
+            if(user.leagues.length == 0) {
+                resolve('No leagues joined. No schedules found.')
+            } else {
+                const userSchedules = []
+                for (let league_id of user.leagues) { 
+                    const schedules =  await db.collection('season_schedules').find({league_id: league_id}).toArray()
+                    const latestSchedule = schedules.reduce((a, b) => (a.timeStamp > b.timeStamp ? a : b));
+                    userSchedules.push(latestSchedule)
+                }
+                resolve(userSchedules)
+            }    
+        } catch(err) {
+            reject(err)
+        }
+    })
+}
+
 const createSeasonSchedule = ({league_id, start_date, end_date, game_days, match_sets, game_dates, events, season_arenas, skip_holidays}) => {
     return new Promise(async (resolve, reject) => {
         try {            
@@ -703,6 +728,7 @@ module.exports = {
     resetDatabase,
     getUser,
     getUsersFromTeam,
+    getUserSchedules,
     getAllUsers,
     createUser,
     updateUser,
