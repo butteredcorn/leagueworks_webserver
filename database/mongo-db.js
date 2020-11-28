@@ -537,7 +537,7 @@ const getMatch = ({match_id}) => {
     })
 }
 
-const createMatch = ({season_id, summary, home_team, home_team_players, away_team, away_team_players, start_date, arena}) => {
+const createMatch = ({season_id, summary, home_team, home_team_players, away_team, away_team_players, start_date, arena, winner_id, loser_id}) => {
     return new Promise(async (resolve, reject) => {
         try {            
             if (!db) await mongoStart()

@@ -568,10 +568,9 @@ router.post('/create/schedule', protectedPostRoute, async (req, res) => {
             for(let event of result.events) {
                 const {summary, home_team, home_team_players, away_team, away_team_players, start_date, arena} = event
                 const match = await db.createMatch({summary, home_team, home_team_players, away_team, away_team_players, start_date, arena})
-                console.log(match)
-                event.match_id = match._id
+                event.match_id = match[0]._id
             }
-           // console.log(result)
+            console.log(result.events)
 
             console.log(req.body.season)
             
