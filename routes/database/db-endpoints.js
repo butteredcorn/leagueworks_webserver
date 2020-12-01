@@ -423,7 +423,7 @@ router.post('/read/arenaByName', protectedPostRoute, async (req, res) => {
         if (!req.body.arena) throw new Error(`No arena object found. req.body.arena was ${req.body.arena}`)
 
         if (req.body && req.body.arena) {
-            const result = await db.getArena({name: req.body.arena.name})
+            const result = await db.getArenaByName({name: req.body.arena.name})
             if (logging) console.log(result)
             res.send(result)
         }
