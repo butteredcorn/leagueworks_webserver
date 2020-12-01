@@ -710,7 +710,8 @@ router.post('/create/post', protectedPostRoute, async (req, res) => {
                 thumbnail_link: req.body.post.thumbnail_link,
                 likes: [],
                 league_id: req.body.post.league_id,
-                username: req.body.post.username
+                username: req.body.post.username,
+                user_profile_thumbnail: req.body.post.user_profile_thumbnail
             })
 
             if (logging) console.log(result)

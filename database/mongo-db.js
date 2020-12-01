@@ -847,12 +847,12 @@ const getUserPosts = ({user_id}) => {
     })
 }
 
-const createPost = ({user_id, username, title, description, thumbnail_link, likes, league_id}) => {
+const createPost = ({user_id, username, user_profile_thumbnail, title, description, thumbnail_link, likes, league_id}) => {
     return new Promise(async (resolve, reject) => {
         try {            
             if (!db) await mongoStart()
             const timeStamp = Date.now()
-            await db.collection('posts').insertOne({user_id, username, title, description, thumbnail_link, likes, league_id, timeStamp}, (err, res) => {
+            await db.collection('posts').insertOne({user_id, username, user_profile_thumbnail, title, description, thumbnail_link, likes, league_id, timeStamp}, (err, res) => {
                 if(err) reject(err)
                 resolve(res.ops)
             })
