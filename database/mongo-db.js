@@ -493,7 +493,7 @@ const getArenaByName = ({name}) => {
         try {
             if (!db) await mongoStart()
 
-            if (arena_id) {
+            if (name) {
                 await db.collection('arenas').findOne({name: name}, (err, doc) => {
                     if(err) {
                         reject(err)
