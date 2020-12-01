@@ -418,6 +418,21 @@ router.post('/read/arena', protectedPostRoute, async (req, res) => {
     }
 })
 
+router.post('/read/arenaByName', protectedPostRoute, async (req, res) => {
+    try {
+        if (!req.body.arena) throw new Error(`No arena object found. req.body.arena was ${req.body.arena}`)
+
+        if (req.body && req.body.arena) {
+            const result = await db.getArena({name: req.body.arena.name})
+            if (logging) console.log(result)
+            res.send(result)
+        }
+    } catch (err) {
+        if(logging) console.log(err.message)
+        res.send({error: err.message})
+    }
+})
+
 router.post('/read/arenas', protectedPostRoute, async (req, res) => {
     try {
         const result = await db.getAllArenas()

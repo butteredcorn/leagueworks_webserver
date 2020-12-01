@@ -488,6 +488,29 @@ const getArena = ({arena_id, email}) => {
     })
 }
 
+const getArenaByName = ({name}) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!db) await mongoStart()
+
+            if (arena_id) {
+                await db.collection('arenas').findOne({name: name}, (err, doc) => {
+                    if(err) {
+                        reject(err)
+                    }
+                    resolve(doc)
+                })
+            
+            } else {
+                throw new Error(`Please provide valid name. It was ${name}`)
+            }
+        } catch (err) {
+            reject(err)
+        }
+    })
+}
+
+
 const getAllArenas = () => {
     return new Promise(async(resolve, reject) => {
         try {
@@ -502,11 +525,11 @@ const getAllArenas = () => {
     })
 }
 
-const createArena = ({email, phone_number, latitude, longitude, thumbnail_link, description}) => {
+const createArena = ({arena_id, name, address, phone_number, location, photos, google_rating}) => {
     return new Promise(async (resolve, reject) => {
         try {            
             if (!db) await mongoStart()
-            await db.collection('arenas').insertOne({email, phone_number, latitude, longitude, thumbnail_link, description}, (err, res) => {
+            await db.collection('arenas').insertOne({arena_id, name, address, phone_number, location, photos, google_rating}, (err, res) => {
                 if(err) reject(err)
                 resolve(res.ops)
             })
@@ -879,6 +902,7 @@ module.exports = {
     createTeam,
     updateTeam,
     getArena,
+    getArenaByName,
     getAllArenas,
     createArena,
     getMatch,
