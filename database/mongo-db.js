@@ -615,6 +615,32 @@ const getSeasonSchedule = ({season_id}) => {
     })
 }
 
+const getLatestLeagueSeason = ({league_id}) => {
+    return new Promise (async (resolve, reject) => {
+        try {
+            if (!db) await mongoStart()
+
+            if (league_id) {
+                const leagueSchedules = await db.collection('season_schedules').find({league_id: league_id}).toArray()
+                
+                let latestSchedule
+                if(leagueSchedules.length > 1) {
+                    latestSchedule = leagueSchedules.reduce((a, b) => (a.timeStamp > b.timeStamp ? a : b));
+                } else {
+                    latestSchedule = leagueSchedules[0]
+                }
+                if (!latestSchedule) resolve({error: "no schedules exist for league_id"})
+                resolve(latestSchedule)     
+            } else {
+                throw new Error(`Please specify valid league_id. It was ${league_id}.`)
+            }
+    
+        } catch(err) {
+            reject(err)
+        }
+    })
+}
+
 const getScheduleByLeague = ({league_id}) => {
     return new Promise (async (resolve, reject) => {
         try {
@@ -924,6 +950,7 @@ module.exports = {
     updateMatch,
     getSeasonSchedule,
     getScheduleByLeague,
+    getLatestLeagueSeason,
     createSeasonSchedule,
     updateEventInSeasonSchedule,
     getMessage,

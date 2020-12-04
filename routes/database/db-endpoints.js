@@ -388,10 +388,9 @@ router.post('/update/team', protectedPostRoute, async (req, res) => {
         //the queried about user
         if (!req.body.team) throw new Error(`No team object found. req.body.team was ${req.body.team}`)
 
-        //console.log(req.user) //the logged in user
-
         if (req.body && req.body.team) {
             const result = await db.updateTeam({team_id: req.body.team.team_id, updates: req.body.team.updates})
+            
             if (logging) console.log(result)
             res.send(result)
         }
@@ -399,8 +398,7 @@ router.post('/update/team', protectedPostRoute, async (req, res) => {
     } catch (err) {
         if(logging) console.log(err.message)
         res.send({error: err.message})
-    }
-    
+    }  
 })
 
 router.post('/read/arena', protectedPostRoute, async (req, res) => {
@@ -580,10 +578,10 @@ router.post('/update/match', protectedPostRoute, async (req, res) => {
 
 router.post('/read/schedule', protectedPostRoute, async (req, res) => {
     try {
-        if (!req.body.season_schedule) throw new Error(`No schedule object found. req.body.season_schedule was ${req.body.season_schedule}`)
+        if (!req.body.season) throw new Error(`No schedule object found. req.body.season was ${req.body.season}`)
 
-        if (req.body && req.body.season_schedule) {
-            const result = await db.getSeasonSchedule({season_schedule_id: req.body.season_schedule.season_schedule_id})
+        if (req.body && req.body.season) {
+            const result = await db.getSeasonSchedule({season_id: req.body.season.season_id})
             if (logging) console.log(result)
             res.send(result)
         }
@@ -599,6 +597,21 @@ router.post('/read/leagueSchedule', protectedPostRoute, async (req, res) => {
 
         if (req.body && req.body.league) {
             const result = await db.getScheduleByLeague({league_id: req.body.league.league_id})
+            if (logging) console.log(result)
+            res.send(result)
+        }
+    } catch (err) {
+        if(logging) console.log(err.message)
+        res.send({error: err.message})
+    }
+})
+
+router.post('/read/latestLeagueSchedule', protectedPostRoute, async (req, res) => {
+    try {
+        if (!req.body.league) throw new Error(`No league object found. req.body.league was ${req.body.league}`)
+
+        if (req.body && req.body.league) {
+            const result = await db.getLatestLeagueSeason({league_id: req.body.league.league_id})
             if (logging) console.log(result)
             res.send(result)
         }
