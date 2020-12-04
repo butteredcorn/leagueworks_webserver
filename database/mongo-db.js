@@ -593,20 +593,20 @@ const updateMatch = ({match_id, updates}) => {
     })
 }
 
-const getSeasonSchedule = ({season_schedule_id}) => {
+const getSeasonSchedule = ({season_id}) => {
     return new Promise (async (resolve, reject) => {
         try {
             if (!db) await mongoStart()
 
-            if (season_schedule_id) {
-                await db.collection('season_schedules').findOne({_id: ObjectID(season_schedule_id)}, (err, doc) => {
+            if (season_id) {
+                await db.collection('season_schedules').findOne({_id: ObjectID(season_id)}, (err, doc) => {
                     if(err) {
                         reject(err)
                     }
                     resolve(doc)
                 })
             } else {
-                throw new Error(`Please specify valid season_schedule_id. It was ${season_schedule_id}.`)
+                throw new Error(`Please specify valid season_id. It was ${season_id}.`)
             }
     
         } catch(err) {
@@ -677,6 +677,20 @@ const createSeasonSchedule = ({league_id, start_date, end_date, game_days, match
             await db.collection('season_schedules').insertOne({league_id, start_date, end_date, game_days, match_sets, game_dates, events, season_arenas, skip_holidays, timeStamp}, (err, res) => {
                 if(err) reject(err)
                 resolve(res.ops)
+            })
+        } catch(err) {
+            reject(err)
+        }
+    })
+}
+
+const updateEventInSeasonSchedule = ({season_id, events}) => {
+    return new Promise(async (resolve, reject) => {
+        try {            
+            if (!db) await mongoStart()
+            await db.collection('season_schedules').findOneAndUpdate({_id: ObjectID(season_id)}, {$set:{events: events}}, {returnOriginal: false}, (err, res) => {
+                if(err) reject(err)
+                resolve(res.value)
             })
         } catch(err) {
             reject(err)
@@ -911,6 +925,7 @@ module.exports = {
     getSeasonSchedule,
     getScheduleByLeague,
     createSeasonSchedule,
+    updateEventInSeasonSchedule,
     getMessage,
     getUserMessages,
     getMessagesBySocketKey,

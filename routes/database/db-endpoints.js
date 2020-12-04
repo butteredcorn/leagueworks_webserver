@@ -510,10 +510,67 @@ router.post('/update/match', protectedPostRoute, async (req, res) => {
     try {
         if (!req.body.match) throw new Error(`No match object found. req.body.match was ${req.body.match}`)
 
-        if (req.body && req.body.match) {
-            const result = await db.updateMatch({match_id: req.body.match.match_id, updates: req.body.match.updates})
-            if (logging) console.log(result)
-            res.send(result)
+        //match updates
+        const updates = {season_id: req.body.match.update.season_id}
+
+        if (req.body && req.body.match && req.body.match.update) {
+            
+            //format front end request data
+            if (req.body.match.update.arena) {
+                updates.arena = req.body.match.update.arena
+            }
+            if (req.body.match.update.start_date) {
+                updates.start_date = req.body.match.update.start_date
+            }
+            if (req.body.match.update.match_result) {
+                const match_result = req.body.match.update.match_result
+                if (match_result.home_team_win && match_result.away_team_win) {
+                    //this is a tie
+                    updates.match_tied = true
+                } else if (match_result.home_team_win) {
+                    updates.winner_id = match_result.home_team
+                    updates.loser_id = match_result.away_team
+                } else if (match_result.away_team_win) {
+                    updates.winner_id = match_result.away_team
+                    updates.loser_id = match_result.home_team
+                }
+            }
+
+            //call update match
+            const matchUpdateResult = await db.updateMatch({match_id: req.body.match.match_id, updates: updates})
+            
+            //need to update two things, the schedule of events, and the individual match itself
+            const currentSeason = await db.getSeasonSchedule({season_id: req.body.match.update.season_id})
+            for (let event of currentSeason.events) {
+                if (event.match_id == req.body.match.match_id) {
+                    if (req.body.match.update.arena) {
+                        event.arena = req.body.match.update.arena
+                    }
+                    if (req.body.match.update.start_date) {
+                        event.start_date = req.body.match.update.start_date
+                    }
+                    if (req.body.match.update.match_result) {
+                        const match_result = req.body.match.update.match_result
+                        if (match_result.home_team_win && match_result.away_team_win) {
+                            //this is a tie
+                            event.match_tied = true
+                        } else if (match_result.home_team_win) {
+                            event.winner_id = match_result.home_team
+                            event.loser_id = match_result.away_team
+                        } else if (match_result.away_team_win) {
+                            event.winner_id = match_result.away_team
+                            event.loser_id = match_result.home_team
+                        }
+                    }
+                    break;
+                }
+            }
+
+            const updateSeasonResult = await db.updateEventInSeasonSchedule({season_id: req.body.match.update.season_id, events: currentSeason.events})
+
+            if (logging) console.log(matchUpdateResult)
+            if (logging) console.log(updateSeasonResult)
+            res.send(updateSeasonResult)
         }
     } catch (err) {
         if(logging) console.log(err.message)
@@ -585,13 +642,15 @@ router.post('/create/schedule', protectedPostRoute, async (req, res) => {
                 const {summary, home_team, home_team_players, away_team, away_team_players, start_date, arena} = event
                 const match = await db.createMatch({summary, home_team, home_team_players, away_team, away_team_players, start_date, arena})
                 event.match_id = match[0]._id
+                event.season_id = result._id
             }
+
             console.log(result.events)
 
-            console.log(req.body.season)
+            // console.log(req.body.season)
             
             const databaseResult = await db.createSeasonSchedule({league_id: result.league_id, start_date: result.start_date, end_date: result.end_date, game_days: result.game_days, match_sets: result.match_sets, game_dates: result.game_dates, events: result.events, season_arenas: result.season_arenas, skip_holidays: req.body.season.skip_holidays})
-            console.log(databaseResult)
+            //console.log(databaseResult)
 
             if (logging) console.log(databaseResult)
             res.send(databaseResult)
